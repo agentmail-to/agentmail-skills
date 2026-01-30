@@ -38,11 +38,16 @@ Create scalable inboxes on-demand. Each inbox has a unique email address.
 const autoInbox = await client.inboxes.create();
 
 // Create with custom username and domain
-const customInbox = await client.inboxes.create({ username: "support", domain: "yourdomain.com" });
+const customInbox = await client.inboxes.create({
+  username: "support",
+  domain: "yourdomain.com",
+});
 
 // List, get, delete
 const inboxes = await client.inboxes.list();
-const fetchedInbox = await client.inboxes.get({ inboxId: "inbox@agentmail.to" });
+const fetchedInbox = await client.inboxes.get({
+  inboxId: "inbox@agentmail.to",
+});
 await client.inboxes.delete({ inboxId: "inbox@agentmail.to" });
 ```
 
@@ -66,31 +71,36 @@ Always send both `text` and `html` for best deliverability.
 ```typescript
 // Send message
 await client.inboxes.messages.send({
-    inboxId: "agent@agentmail.to",
-    to: "recipient@example.com",
-    subject: "Hello",
-    text: "Plain text version",
-    html: "<p>HTML version</p>",
-    labels: ["outreach"]
+  inboxId: "agent@agentmail.to",
+  to: "recipient@example.com",
+  subject: "Hello",
+  text: "Plain text version",
+  html: "<p>HTML version</p>",
+  labels: ["outreach"],
 });
 
 // Reply to message
 await client.inboxes.messages.reply({
-    inboxId: "agent@agentmail.to",
-    messageId: "msg_123",
-    text: "Thanks for your email!"
+  inboxId: "agent@agentmail.to",
+  messageId: "msg_123",
+  text: "Thanks for your email!",
 });
 
 // List and get messages
-const messages = await client.inboxes.messages.list({ inboxId: "agent@agentmail.to" });
-const message = await client.inboxes.messages.get({ inboxId: "agent@agentmail.to", messageId: "msg_123" });
+const messages = await client.inboxes.messages.list({
+  inboxId: "agent@agentmail.to",
+});
+const message = await client.inboxes.messages.get({
+  inboxId: "agent@agentmail.to",
+  messageId: "msg_123",
+});
 
 // Update labels
 await client.inboxes.messages.update({
-    inboxId: "agent@agentmail.to",
-    messageId: "msg_123",
-    addLabels: ["replied"],
-    removeLabels: ["unreplied"]
+  inboxId: "agent@agentmail.to",
+  messageId: "msg_123",
+  addLabels: ["replied"],
+  removeLabels: ["unreplied"],
 });
 ```
 
@@ -131,10 +141,16 @@ Threads group related messages in a conversation.
 
 ```typescript
 // List threads (with optional label filter)
-const threads = await client.inboxes.threads.list({ inboxId: "agent@agentmail.to", labels: ["unreplied"] });
+const threads = await client.inboxes.threads.list({
+  inboxId: "agent@agentmail.to",
+  labels: ["unreplied"],
+});
 
 // Get thread details
-const thread = await client.inboxes.threads.get({ inboxId: "agent@agentmail.to", threadId: "thd_123" });
+const thread = await client.inboxes.threads.get({
+  inboxId: "agent@agentmail.to",
+  threadId: "thd_123",
+});
 
 // Org-wide thread listing
 const allThreads = await client.threads.list();
@@ -159,18 +175,20 @@ Send attachments with Base64 encoding. Retrieve from messages or threads.
 // Send with attachment
 const content = Buffer.from(fileBytes).toString("base64");
 await client.inboxes.messages.send({
-    inboxId: "agent@agentmail.to",
-    to: "recipient@example.com",
-    subject: "Report",
-    text: "See attached.",
-    attachments: [{ content, filename: "report.pdf", contentType: "application/pdf" }]
+  inboxId: "agent@agentmail.to",
+  to: "recipient@example.com",
+  subject: "Report",
+  text: "See attached.",
+  attachments: [
+    { content, filename: "report.pdf", contentType: "application/pdf" },
+  ],
 });
 
 // Get attachment
 const fileData = await client.inboxes.messages.getAttachment({
-    inboxId: "agent@agentmail.to",
-    messageId: "msg_123",
-    attachmentId: "att_456"
+  inboxId: "agent@agentmail.to",
+  messageId: "msg_123",
+  attachmentId: "att_456",
 });
 ```
 
@@ -202,14 +220,17 @@ Create drafts for human-in-the-loop approval before sending.
 ```typescript
 // Create draft
 const draft = await client.inboxes.drafts.create({
-    inboxId: "agent@agentmail.to",
-    to: "recipient@example.com",
-    subject: "Pending approval",
-    text: "Draft content"
+  inboxId: "agent@agentmail.to",
+  to: "recipient@example.com",
+  subject: "Pending approval",
+  text: "Draft content",
 });
 
 // Send draft (converts to message)
-await client.inboxes.drafts.send({ inboxId: "agent@agentmail.to", draftId: draft.draftId });
+await client.inboxes.drafts.send({
+  inboxId: "agent@agentmail.to",
+  draftId: draft.draftId,
+});
 ```
 
 ```python
@@ -256,7 +277,9 @@ inboxes = client.inboxes.list(pod_id=pod.pod_id)
 Use `clientId` for safe retries on create operations.
 
 ```typescript
-const inbox = await client.inboxes.create({ clientId: "unique-idempotency-key" });
+const inbox = await client.inboxes.create({
+  clientId: "unique-idempotency-key",
+});
 // Retrying with same clientId returns the original inbox, not a duplicate
 ```
 
@@ -268,14 +291,6 @@ inbox = client.inboxes.create(client_id="unique-idempotency-key")
 ## Real-Time Events
 
 For real-time notifications, see the reference files:
+
 - [webhooks.md](references/webhooks.md) - HTTP-based notifications (requires public URL)
 - [websockets.md](references/websockets.md) - Persistent connection (no public URL needed)
-
-## Best Practices
-
-1. **Always send text + HTML** - Improves deliverability
-2. **Warm up inboxes** - Start with 10 emails/day, gradually increase
-3. **Diversify sending** - 100 inboxes × 100 emails > 1 inbox × 10,000 emails
-4. **No images/links in first email** - Add CTAs after recipient replies
-5. **Use idempotency keys** - Prevent duplicates on network errors
-6. **Use custom domains** - Better deliverability and brand identity

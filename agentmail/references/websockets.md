@@ -30,25 +30,25 @@ import { AgentMailClient, AgentMail } from "agentmail";
 const client = new AgentMailClient({ apiKey: process.env.AGENTMAIL_API_KEY });
 
 async function main() {
-    const socket = await client.websockets.connect();
+  const socket = await client.websockets.connect();
 
-    socket.on("open", () => {
-        console.log("Connected");
-        socket.sendSubscribe({
-            type: "subscribe",
-            inboxIds: ["agent@agentmail.to"],
-        });
+  socket.on("open", () => {
+    console.log("Connected");
+    socket.sendSubscribe({
+      type: "subscribe",
+      inboxIds: ["agent@agentmail.to"],
     });
+  });
 
-    socket.on("message", (event: AgentMail.MessageReceivedEvent) => {
-        if (event.type === "message.received") {
-            console.log("From:", event.message.from_);
-            console.log("Subject:", event.message.subject);
-        }
-    });
+  socket.on("message", (event: AgentMail.MessageReceivedEvent) => {
+    if (event.type === "message.received") {
+      console.log("From:", event.message.from_);
+      console.log("Subject:", event.message.subject);
+    }
+  });
 
-    socket.on("close", (event) => console.log("Disconnected:", event.code));
-    socket.on("error", (error) => console.error("Error:", error));
+  socket.on("close", (event) => console.log("Disconnected:", event.code));
+  socket.on("error", (error) => console.error("Error:", error));
 }
 
 main();
@@ -61,35 +61,36 @@ import { useEffect, useState } from "react";
 import { AgentMailClient, AgentMail } from "agentmail";
 
 function useAgentMailWebSocket(apiKey: string, inboxIds: string[]) {
-    const [lastMessage, setLastMessage] = useState<AgentMail.MessageReceivedEvent | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
+  const [lastMessage, setLastMessage] =
+    useState<AgentMail.MessageReceivedEvent | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-        const client = new AgentMailClient({ apiKey });
-        let socket: Awaited<ReturnType<typeof client.websockets.connect>>;
+  useEffect(() => {
+    const client = new AgentMailClient({ apiKey });
+    let socket: Awaited<ReturnType<typeof client.websockets.connect>>;
 
-        async function connect() {
-            socket = await client.websockets.connect();
+    async function connect() {
+      socket = await client.websockets.connect();
 
-            socket.on("open", () => {
-                setIsConnected(true);
-                socket.sendSubscribe({ type: "subscribe", inboxIds });
-            });
+      socket.on("open", () => {
+        setIsConnected(true);
+        socket.sendSubscribe({ type: "subscribe", inboxIds });
+      });
 
-            socket.on("message", (event) => {
-                if (event.type === "message.received") {
-                    setLastMessage(event);
-                }
-            });
-
-            socket.on("close", () => setIsConnected(false));
+      socket.on("message", (event) => {
+        if (event.type === "message.received") {
+          setLastMessage(event);
         }
+      });
 
-        connect();
-        return () => socket?.close();
-    }, [apiKey, inboxIds.join(",")]);
+      socket.on("close", () => setIsConnected(false));
+    }
 
-    return { lastMessage, isConnected };
+    connect();
+    return () => socket?.close();
+  }, [apiKey, inboxIds.join(",")]);
+
+  return { lastMessage, isConnected };
 }
 ```
 
@@ -162,15 +163,15 @@ Filter events by inbox, pod, or event type.
 
 ```typescript
 socket.sendSubscribe({
-    type: "subscribe",
-    inboxIds: ["agent@agentmail.to"],
-    eventTypes: ["message.received", "message.sent"],
+  type: "subscribe",
+  inboxIds: ["agent@agentmail.to"],
+  eventTypes: ["message.received", "message.sent"],
 });
 
 // By pods
 socket.sendSubscribe({
-    type: "subscribe",
-    podIds: ["pod_123", "pod_456"],
+  type: "subscribe",
+  podIds: ["pod_123", "pod_456"],
 });
 ```
 
@@ -225,14 +226,14 @@ The `event.message` object contains:
 import { AgentMailClient, AgentMailError } from "agentmail";
 
 try {
-    const socket = await client.websockets.connect();
-    // ...
+  const socket = await client.websockets.connect();
+  // ...
 } catch (err) {
-    if (err instanceof AgentMailError) {
-        console.error(`API error: ${err.statusCode} - ${err.message}`);
-    } else {
-        console.error("Connection error:", err);
-    }
+  if (err instanceof AgentMailError) {
+    console.error(`API error: ${err.statusCode} - ${err.message}`);
+  } else {
+    console.error("Connection error:", err);
+  }
 }
 ```
 

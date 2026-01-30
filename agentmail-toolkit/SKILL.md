@@ -41,10 +41,10 @@ import { openai } from "@ai-sdk/openai";
 const toolkit = new AgentMailToolkit();
 
 const result = await streamText({
-    model: openai("gpt-4o"),
-    messages,
-    system: "You are an email agent that can send and receive emails.",
-    tools: toolkit.getTools(),
+  model: openai("gpt-4o"),
+  messages,
+  system: "You are an email agent that can send and receive emails.",
+  tools: toolkit.getTools(),
 });
 ```
 
@@ -55,9 +55,9 @@ import { createAgent, HumanMessage, AIMessage } from "langchain";
 import { AgentMailToolkit } from "agentmail-toolkit/langchain";
 
 const agent = createAgent({
-    model: "openai:gpt-4o",
-    tools: new AgentMailToolkit().getTools(),
-    systemPrompt: "You are an email agent that can send and receive emails.",
+  model: "openai:gpt-4o",
+  tools: new AgentMailToolkit().getTools(),
+  systemPrompt: "You are an email agent that can send and receive emails.",
 });
 
 const result = await agent.stream({ messages }, { streamMode: "messages" });
@@ -75,7 +75,7 @@ const tools = toolkit.getTools();
 
 // Each tool has: name, label, description, parameters, execute
 for (const tool of tools) {
-    agent.registerTool(tool);
+  agent.registerTool(tool);
 }
 ```
 
@@ -131,18 +131,18 @@ agent = Agent(
 
 All frameworks get access to these tools:
 
-| Tool | Description |
-|------|-------------|
-| `create_inbox` | Create a new email inbox |
-| `list_inboxes` | List all inboxes |
-| `get_inbox` | Get inbox details |
-| `delete_inbox` | Delete an inbox |
-| `send_message` | Send an email |
-| `reply_to_message` | Reply to an email |
-| `list_threads` | List email threads |
-| `get_thread` | Get thread details |
-| `get_attachment` | Download an attachment |
-| `update_message` | Update message labels |
+| Tool               | Description              |
+| ------------------ | ------------------------ |
+| `create_inbox`     | Create a new email inbox |
+| `list_inboxes`     | List all inboxes         |
+| `get_inbox`        | Get inbox details        |
+| `delete_inbox`     | Delete an inbox          |
+| `send_message`     | Send an email            |
+| `reply_to_message` | Reply to an email        |
+| `list_threads`     | List email threads       |
+| `get_thread`       | Get thread details       |
+| `get_attachment`   | Download an attachment   |
+| `update_message`   | Update message labels    |
 
 ---
 
@@ -175,10 +175,10 @@ toolkit = AgentMailToolkit(client=client)
 
 ## Framework Summary
 
-| Framework | TypeScript Import | Python Import |
-|-----------|-------------------|---------------|
-| Vercel AI SDK | `from 'agentmail-toolkit/ai-sdk'` | - |
-| LangChain | `from 'agentmail-toolkit/langchain'` | `from agentmail_toolkit.langchain import AgentMailToolkit` |
-| Clawdbot | `from 'agentmail-toolkit/clawdbot'` | - |
-| OpenAI Agents SDK | - | `from agentmail_toolkit.openai import AgentMailToolkit` |
-| LiveKit Agents | - | `from agentmail_toolkit.livekit import AgentMailToolkit` |
+| Framework         | TypeScript Import                    | Python Import                                              |
+| ----------------- | ------------------------------------ | ---------------------------------------------------------- |
+| Vercel AI SDK     | `from 'agentmail-toolkit/ai-sdk'`    | -                                                          |
+| LangChain         | `from 'agentmail-toolkit/langchain'` | `from agentmail_toolkit.langchain import AgentMailToolkit` |
+| Clawdbot          | `from 'agentmail-toolkit/clawdbot'`  | -                                                          |
+| OpenAI Agents SDK | -                                    | `from agentmail_toolkit.openai import AgentMailToolkit`    |
+| LiveKit Agents    | -                                    | `from agentmail_toolkit.livekit import AgentMailToolkit`   |

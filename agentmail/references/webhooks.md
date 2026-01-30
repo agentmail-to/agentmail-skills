@@ -20,7 +20,9 @@ import { AgentMailClient } from "agentmail";
 const client = new AgentMailClient({ apiKey: "YOUR_API_KEY" });
 
 // Create webhook
-const webhook = await client.webhooks.create({ url: "https://your-server.com/webhooks" });
+const webhook = await client.webhooks.create({
+  url: "https://your-server.com/webhooks",
+});
 
 // List webhooks
 const webhooks = await client.webhooks.list();
@@ -61,8 +63,8 @@ Subscribe only to events you need:
 
 ```typescript
 const webhook = await client.webhooks.create({
-    url: "https://your-server.com/webhooks",
-    eventTypes: ["message.received", "message.bounced"]
+  url: "https://your-server.com/webhooks",
+  eventTypes: ["message.received", "message.bounced"],
 });
 ```
 
@@ -122,14 +124,14 @@ const app = express();
 app.use(express.json());
 
 app.post("/webhooks", (req, res) => {
-    const payload = req.body;
+  const payload = req.body;
 
-    if (payload.event_type === "message.received") {
-        // Queue for async processing
-        processEmail(payload.message);
-    }
+  if (payload.event_type === "message.received") {
+    // Queue for async processing
+    processEmail(payload.message);
+  }
 
-    res.status(200).send("OK"); // Return immediately
+  res.status(200).send("OK"); // Return immediately
 });
 ```
 
@@ -161,27 +163,31 @@ Verify webhook signatures to ensure requests are from AgentMail.
 import crypto from "crypto";
 import express from "express";
 
-function verifySignature(payload: Buffer, signature: string, secret: string): boolean {
-    const expected = crypto
-        .createHmac("sha256", secret)
-        .update(payload)
-        .digest("hex");
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+function verifySignature(
+  payload: Buffer,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
 
 app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
-    const signature = req.headers["x-agentmail-signature"];
-    if (typeof signature !== "string") {
-        return res.status(401).send("Missing signature");
-    }
+  const signature = req.headers["x-agentmail-signature"];
+  if (typeof signature !== "string") {
+    return res.status(401).send("Missing signature");
+  }
 
-    const payload = req.body;
-    if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
-        return res.status(401).send("Invalid signature");
-    }
-    const event = JSON.parse(payload.toString("utf8"));
-    // Process event...
-    res.status(200).send("OK");
+  const payload = req.body;
+  if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+    return res.status(401).send("Invalid signature");
+  }
+  const event = JSON.parse(payload.toString("utf8"));
+  // Process event...
+  res.status(200).send("OK");
 });
 ```
 
