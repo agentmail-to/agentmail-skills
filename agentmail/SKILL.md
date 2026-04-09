@@ -228,6 +228,8 @@ Path(att.filename or "attachment.bin").write_bytes(file_bytes)
 ```
 
 ```typescript
+import { promises as fs } from "fs";
+
 // Step 1: get the signed URL (and expiry).
 // Note: getAttachment takes positional path params, not an object.
 // The broader TS calling-convention discussion is tracked in issue #2 —
@@ -244,7 +246,7 @@ const att = await client.inboxes.messages.getAttachment(
 const res = await fetch(att.downloadUrl);
 if (!res.ok) throw new Error(`Attachment fetch failed: ${res.status}`);
 const fileBytes = Buffer.from(await res.arrayBuffer());
-await fs.promises.writeFile(att.filename ?? "attachment.bin", fileBytes);
+await fs.writeFile(att.filename ?? "attachment.bin", fileBytes);
 ```
 
 **Sandbox gotcha:** the signed URLs point at `cdn.agentmail.to`, not `api.agentmail.to`. If your sandbox egress only whitelists the API host, the CDN fetch will 403/timeout even though `get_attachment` itself succeeds. Allow `cdn.agentmail.to` outbound, or do the CDN fetch in an outer process and pass the bytes into the sandbox.
