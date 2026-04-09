@@ -169,7 +169,7 @@ all_threads = client.threads.list()
 
 ## Attachments
 
-Send attachments with Base64 encoding. Retrieve from messages or threads.
+Send attachments with Base64 encoding. Retrieve via signed URLs.
 
 ```typescript
 // Send with attachment
@@ -182,13 +182,6 @@ await client.inboxes.messages.send({
   attachments: [
     { content, filename: "report.pdf", contentType: "application/pdf" },
   ],
-});
-
-// Get attachment
-const fileData = await client.inboxes.messages.getAttachment({
-  inboxId: "agent@agentmail.to",
-  messageId: "msg_123",
-  attachmentId: "att_456",
 });
 ```
 
@@ -204,14 +197,59 @@ client.inboxes.messages.send(
     text="See attached.",
     attachments=[{"content": content, "filename": "report.pdf", "content_type": "application/pdf"}]
 )
+```
 
-# Get attachment
-file_data = client.inboxes.messages.get_attachment(
+### Downloading attachments (read carefully)
+
+`get_attachment` / `getAttachment` does **not** return file bytes. It returns an `AttachmentResponse` object containing:
+
+- `download_url` — a **CloudFront-signed URL** (`https://cdn.agentmail.to/attachments/<id>?Expires=...&Signature=...`)
+- `expires_at` — the URL expires **1 hour** after you call `get_attachment`
+- `filename`, `size`, `content_type`
+
+The signed URL is public-readable during its window — no auth header needed on the GET. To actually get the bytes you must fetch `download_url` yourself, and you must do it **before `expires_at`**. Do not persist the URL in a queue, a session file, or a ticket description — the next worker will see an expired-signature 403. Fetch to bytes inside the same call, then store the bytes (or the `attachment_id`, and re-fetch a fresh URL on demand).
+
+```python
+import urllib.request
+from pathlib import Path
+
+# Step 1: get the signed URL (and expiry)
+att = client.inboxes.messages.get_attachment(
     inbox_id="agent@agentmail.to",
     message_id="msg_123",
-    attachment_id="att_456"
+    attachment_id="att_456",
 )
+
+# Step 2: fetch the bytes IMMEDIATELY — the URL expires in ~1h
+with urllib.request.urlopen(att.download_url, timeout=30) as r:
+    file_bytes = r.read()
+
+Path(att.filename or "attachment.bin").write_bytes(file_bytes)
 ```
+
+```typescript
+import { promises as fs } from "fs";
+
+// Step 1: get the signed URL (and expiry).
+// Note: getAttachment takes positional path params, not an object.
+// The broader TS calling-convention discussion is tracked in issue #2 —
+// most methods on client.inboxes.* are positional, and the object-style
+// examples elsewhere on this page throw `JsonError: Expected string.
+// Received object.` until they're corrected.
+const att = await client.inboxes.messages.getAttachment(
+  "agent@agentmail.to", // inbox_id
+  "msg_123",            // message_id
+  "att_456",            // attachment_id
+);
+
+// Step 2: fetch the bytes IMMEDIATELY — the URL expires in ~1h
+const res = await fetch(att.downloadUrl);
+if (!res.ok) throw new Error(`Attachment fetch failed: ${res.status}`);
+const fileBytes = Buffer.from(await res.arrayBuffer());
+await fs.writeFile(att.filename ?? "attachment.bin", fileBytes);
+```
+
+**Sandbox gotcha:** the signed URLs point at `cdn.agentmail.to`, not `api.agentmail.to`. If your sandbox egress only whitelists the API host, the CDN fetch will 403/timeout even though `get_attachment` itself succeeds. Allow `cdn.agentmail.to` outbound, or do the CDN fetch in an outer process and pass the bytes into the sandbox.
 
 ## Drafts
 
