@@ -133,6 +133,7 @@ agentmail-mcp
 | `delete_inbox`     | Delete an inbox                 |
 | `send_message`     | Send an email from an inbox     |
 | `reply_to_message` | Reply to an existing message    |
+| `forward_message`  | Forward an existing message     |
 | `list_threads`     | List email threads in an inbox  |
 | `get_thread`       | Get thread details and messages |
 | `get_attachment`   | Download an attachment          |

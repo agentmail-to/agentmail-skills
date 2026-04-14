@@ -18,8 +18,9 @@ npm install -g agentmail-cli
 ### Inboxes
 
 ```bash
-# Create an inbox
-agentmail inboxes create --display-name "My Agent" --username myagent --domain example.com
+# Create an inbox (defaults to @agentmail.to;
+# pass --domain only if you have verified a custom domain)
+agentmail inboxes create --display-name "My Agent" --username myagent
 
 # List inboxes
 agentmail inboxes list
@@ -112,8 +113,9 @@ agentmail webhooks list
 ### Domains
 
 ```bash
-# Add a custom domain
-agentmail domains create --domain example.com --feedback-enabled false
+# Add a custom domain (omit --feedback-enabled to disable it,
+# pass the flag alone to enable bounce/complaint notifications)
+agentmail domains create --domain example.com
 
 # Verify domain DNS
 agentmail domains verify --domain-id <domain_id>
@@ -124,8 +126,8 @@ agentmail domains get-zone-file --domain-id <domain_id>
 
 ## Global Flags
 
-All commands support: `--api-key`, `--base-url`, `--environment`, `--format`, `--debug`.
+All commands support: `--api-key`, `--base-url`, `--environment`, `--format`, `--format-error`, `--transform`, `--transform-error`, `--debug`.
 
 ## Output Formats
 
-Use `--format` to control output: `json` (default), `pretty`, `yaml`, `jsonl`, `raw`, `explore`.
+Use `--format` to control output: `auto` (default), `pretty`, `json`, `jsonl`, `yaml`, `raw`, `explore`.

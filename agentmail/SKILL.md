@@ -45,10 +45,8 @@ const customInbox = await client.inboxes.create({
 
 // List, get, delete
 const inboxes = await client.inboxes.list();
-const fetchedInbox = await client.inboxes.get({
-  inboxId: "inbox@agentmail.to",
-});
-await client.inboxes.delete({ inboxId: "inbox@agentmail.to" });
+const fetchedInbox = await client.inboxes.get("inbox@agentmail.to");
+await client.inboxes.delete("inbox@agentmail.to");
 ```
 
 ```python
@@ -56,7 +54,10 @@ await client.inboxes.delete({ inboxId: "inbox@agentmail.to" });
 inbox = client.inboxes.create()
 
 # Create with custom username and domain
-inbox = client.inboxes.create(username="support", domain="yourdomain.com")
+from agentmail.inboxes.types import CreateInboxRequest
+inbox = client.inboxes.create(
+    request=CreateInboxRequest(username="support", domain="yourdomain.com"),
+)
 
 # List, get, delete
 inboxes = client.inboxes.list()
@@ -70,8 +71,7 @@ Always send both `text` and `html` for best deliverability.
 
 ```typescript
 // Send message
-await client.inboxes.messages.send({
-  inboxId: "agent@agentmail.to",
+await client.inboxes.messages.send("agent@agentmail.to", {
   to: "recipient@example.com",
   subject: "Hello",
   text: "Plain text version",
@@ -80,25 +80,16 @@ await client.inboxes.messages.send({
 });
 
 // Reply to message
-await client.inboxes.messages.reply({
-  inboxId: "agent@agentmail.to",
-  messageId: "msg_123",
+await client.inboxes.messages.reply("agent@agentmail.to", "msg_123", {
   text: "Thanks for your email!",
 });
 
 // List and get messages
-const messages = await client.inboxes.messages.list({
-  inboxId: "agent@agentmail.to",
-});
-const message = await client.inboxes.messages.get({
-  inboxId: "agent@agentmail.to",
-  messageId: "msg_123",
-});
+const messages = await client.inboxes.messages.list("agent@agentmail.to");
+const message = await client.inboxes.messages.get("agent@agentmail.to", "msg_123");
 
 // Update labels
-await client.inboxes.messages.update({
-  inboxId: "agent@agentmail.to",
-  messageId: "msg_123",
+await client.inboxes.messages.update("agent@agentmail.to", "msg_123", {
   addLabels: ["replied"],
   removeLabels: ["unreplied"],
 });
@@ -141,16 +132,12 @@ Threads group related messages in a conversation.
 
 ```typescript
 // List threads (with optional label filter)
-const threads = await client.inboxes.threads.list({
-  inboxId: "agent@agentmail.to",
+const threads = await client.inboxes.threads.list("agent@agentmail.to", {
   labels: ["unreplied"],
 });
 
 // Get thread details
-const thread = await client.inboxes.threads.get({
-  inboxId: "agent@agentmail.to",
-  threadId: "thd_123",
-});
+const thread = await client.inboxes.threads.get("agent@agentmail.to", "thd_123");
 
 // Org-wide thread listing
 const allThreads = await client.threads.list();
@@ -174,8 +161,7 @@ Send attachments with Base64 encoding. Retrieve from messages or threads.
 ```typescript
 // Send with attachment
 const content = Buffer.from(fileBytes).toString("base64");
-await client.inboxes.messages.send({
-  inboxId: "agent@agentmail.to",
+await client.inboxes.messages.send("agent@agentmail.to", {
   to: "recipient@example.com",
   subject: "Report",
   text: "See attached.",
@@ -185,11 +171,11 @@ await client.inboxes.messages.send({
 });
 
 // Get attachment
-const fileData = await client.inboxes.messages.getAttachment({
-  inboxId: "agent@agentmail.to",
-  messageId: "msg_123",
-  attachmentId: "att_456",
-});
+const fileData = await client.inboxes.messages.getAttachment(
+  "agent@agentmail.to",
+  "msg_123",
+  "att_456",
+);
 ```
 
 ```python
@@ -219,18 +205,14 @@ Create drafts for human-in-the-loop approval before sending.
 
 ```typescript
 // Create draft
-const draft = await client.inboxes.drafts.create({
-  inboxId: "agent@agentmail.to",
+const draft = await client.inboxes.drafts.create("agent@agentmail.to", {
   to: "recipient@example.com",
   subject: "Pending approval",
   text: "Draft content",
 });
 
 // Send draft (converts to message)
-await client.inboxes.drafts.send({
-  inboxId: "agent@agentmail.to",
-  draftId: draft.draftId,
-});
+await client.inboxes.drafts.send("agent@agentmail.to", draft.draftId, {});
 ```
 
 ```python
@@ -255,21 +237,21 @@ Multi-tenant isolation for SaaS platforms. Each customer gets isolated inboxes.
 const pod = await client.pods.create({ clientId: "customer_123" });
 
 // Create inbox within pod
-const inbox = await client.inboxes.create({ podId: pod.podId });
+const inbox = await client.pods.inboxes.create(pod.podId, {});
 
-// List resources scoped to pod
-const inboxes = await client.inboxes.list({ podId: pod.podId });
+// List inboxes scoped to pod
+const inboxes = await client.pods.inboxes.list(pod.podId);
 ```
 
 ```python
 # Create pod for a customer
 pod = client.pods.create(client_id="customer_123")
 
-# Create inbox within pod
-inbox = client.inboxes.create(pod_id=pod.pod_id)
+# Create inbox within pod (pods.inboxes.create accepts flat kwargs)
+inbox = client.pods.inboxes.create(pod_id=pod.pod_id)
 
-# List resources scoped to pod
-inboxes = client.inboxes.list(pod_id=pod.pod_id)
+# List inboxes scoped to pod
+inboxes = client.pods.inboxes.list(pod_id=pod.pod_id)
 ```
 
 ## Idempotency
@@ -284,7 +266,11 @@ const inbox = await client.inboxes.create({
 ```
 
 ```python
-inbox = client.inboxes.create(client_id="unique-idempotency-key")
+from agentmail.inboxes.types import CreateInboxRequest
+
+inbox = client.inboxes.create(
+    request=CreateInboxRequest(client_id="unique-idempotency-key"),
+)
 # Retrying with same client_id returns the original inbox, not a duplicate
 ```
 
