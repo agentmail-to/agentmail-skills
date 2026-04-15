@@ -139,6 +139,7 @@ All frameworks get access to these tools:
 | `delete_inbox`     | Delete an inbox          |
 | `send_message`     | Send an email            |
 | `reply_to_message` | Reply to an email        |
+| `forward_message`  | Forward an email         |
 | `list_threads`     | List email threads       |
 | `get_thread`       | Get thread details       |
 | `get_attachment`   | Download an attachment   |

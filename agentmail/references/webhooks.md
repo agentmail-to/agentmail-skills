@@ -14,6 +14,8 @@ For local development without a public URL, use [websockets.md](websockets.md) i
 
 Register a webhook endpoint to receive events.
 
+`eventTypes` / `event_types` is **required** — you must pass the list of events the webhook should receive.
+
 ```typescript
 import { AgentMailClient } from "agentmail";
 
@@ -22,13 +24,14 @@ const client = new AgentMailClient({ apiKey: "YOUR_API_KEY" });
 // Create webhook
 const webhook = await client.webhooks.create({
   url: "https://your-server.com/webhooks",
+  eventTypes: ["message.received"],
 });
 
 // List webhooks
 const webhooks = await client.webhooks.list();
 
 // Delete webhook
-await client.webhooks.delete({ webhookId: webhook.webhookId });
+await client.webhooks.delete(webhook.webhookId);
 ```
 
 ```python
@@ -36,7 +39,10 @@ from agentmail import AgentMail
 client = AgentMail(api_key="YOUR_API_KEY")
 
 # Create webhook
-webhook = client.webhooks.create(url="https://your-server.com/webhooks")
+webhook = client.webhooks.create(
+    url="https://your-server.com/webhooks",
+    event_types=["message.received"],
+)
 
 # List webhooks
 webhooks = client.webhooks.list()
@@ -56,24 +62,6 @@ client.webhooks.delete(webhook_id=webhook.webhook_id)
 | `message.complained` | Recipient marked email as spam        |
 | `message.rejected`   | Email rejected before sending         |
 | `domain.verified`    | Custom domain verification completed  |
-
-## Event Filtering
-
-Subscribe only to events you need:
-
-```typescript
-const webhook = await client.webhooks.create({
-  url: "https://your-server.com/webhooks",
-  eventTypes: ["message.received", "message.bounced"],
-});
-```
-
-```python
-webhook = client.webhooks.create(
-    url="https://your-server.com/webhooks",
-    event_types=["message.received", "message.bounced"]
-)
-```
 
 ## Payload Structure
 
@@ -172,7 +160,12 @@ function verifySignature(
     .createHmac("sha256", secret)
     .update(payload)
     .digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  const expectedBuf = Buffer.from(expected, "hex");
+  const signatureBuf = Buffer.from(signature, "hex");
+  // timingSafeEqual throws RangeError on mismatched lengths;
+  // return false for any malformed header instead of crashing.
+  if (expectedBuf.length !== signatureBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, signatureBuf);
 }
 
 app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
@@ -197,7 +190,11 @@ app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
 import hmac
 import hashlib
 
-def verify_signature(payload: bytes, signature: str, secret: str) -> bool:
+def verify_signature(payload: bytes, signature, secret: str) -> bool:
+    # compare_digest raises TypeError on None, bytes, or any non-str value.
+    # Reject anything that isn't a string up front.
+    if not isinstance(signature, str) or not signature:
+        return False
     expected = hmac.new(
         secret.encode(),
         payload,
