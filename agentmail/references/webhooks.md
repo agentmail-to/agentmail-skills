@@ -190,9 +190,10 @@ app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
 import hmac
 import hashlib
 
-def verify_signature(payload: bytes, signature: str | None, secret: str) -> bool:
-    # compare_digest raises TypeError on None, so reject unsigned requests first.
-    if not signature:
+def verify_signature(payload: bytes, signature, secret: str) -> bool:
+    # compare_digest raises TypeError on None, bytes, or any non-str value.
+    # Reject anything that isn't a string up front.
+    if not isinstance(signature, str) or not signature:
         return False
     expected = hmac.new(
         secret.encode(),

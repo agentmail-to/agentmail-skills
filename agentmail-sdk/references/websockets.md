@@ -223,10 +223,15 @@ The `event.message` object on received events:
 ## Error handling
 
 ```python
+import asyncio
 from agentmail import AsyncAgentMail, Subscribe, MessageReceivedEvent
 from agentmail.core.api_error import ApiError
 
 client = AsyncAgentMail()
+
+async def process_email(message) -> None:
+    # Your inbound email handler goes here.
+    print(f"New message from {message.from_}: {message.subject}")
 
 async def main():
     try:
@@ -239,6 +244,8 @@ async def main():
         print(f"API error: {e.status_code} - {e.body}")
     except Exception as e:
         print(f"Connection error: {e}")
+
+asyncio.run(main())
 ```
 
 ```typescript

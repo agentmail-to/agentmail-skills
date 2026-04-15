@@ -54,9 +54,9 @@ An attacker sends fake webhook payloads to your endpoint to trigger agent action
 ```python
 import hmac, hashlib
 
-def verify_signature(payload: bytes, signature: str | None, secret: str) -> bool:
-    # compare_digest raises TypeError on None — reject unsigned requests first.
-    if not signature:
+def verify_signature(payload: bytes, signature, secret: str) -> bool:
+    # compare_digest raises TypeError on None, bytes, or any non-str value.
+    if not isinstance(signature, str) or not signature:
         return False
     expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, signature)
