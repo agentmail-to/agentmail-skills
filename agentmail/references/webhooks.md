@@ -160,7 +160,12 @@ function verifySignature(
     .createHmac("sha256", secret)
     .update(payload)
     .digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  const expectedBuf = Buffer.from(expected, "hex");
+  const signatureBuf = Buffer.from(signature, "hex");
+  // timingSafeEqual throws RangeError on mismatched lengths;
+  // return false for any malformed header instead of crashing.
+  if (expectedBuf.length !== signatureBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, signatureBuf);
 }
 
 app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
@@ -185,7 +190,10 @@ app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
 import hmac
 import hashlib
 
-def verify_signature(payload: bytes, signature: str, secret: str) -> bool:
+def verify_signature(payload: bytes, signature: str | None, secret: str) -> bool:
+    # compare_digest raises TypeError on None, so reject unsigned requests first.
+    if not signature:
+        return False
     expected = hmac.new(
         secret.encode(),
         payload,

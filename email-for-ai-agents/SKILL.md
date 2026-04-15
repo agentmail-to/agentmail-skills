@@ -61,11 +61,23 @@ with client.websockets.connect() as socket:
 Agent sends personalized outreach, tracks replies, and manages follow-up sequences.
 
 ```python
+from agentmail import AgentMail
+from agentmail.inboxes.types import CreateInboxRequest
+
+client = AgentMail()
+outbox = client.inboxes.create(
+    request=CreateInboxRequest(username="sales", client_id="sales-v1"),
+)
+
 prospects = [{"email": "jane@acme.com", "name": "Jane", "company": "Acme"}]
+
+def generate_personalized_email(prospect: dict) -> str:
+    # Your LLM-backed copywriting goes here.
+    return f"Hi {prospect['name']}, ..."
 
 for prospect in prospects:
     client.inboxes.messages.send(
-        inbox_id,
+        outbox.inbox_id,
         to=prospect["email"],
         subject=f"Quick question about {prospect['company']}",
         text=generate_personalized_email(prospect),

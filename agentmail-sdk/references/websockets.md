@@ -223,18 +223,22 @@ The `event.message` object on received events:
 ## Error handling
 
 ```python
+from agentmail import AsyncAgentMail, Subscribe, MessageReceivedEvent
 from agentmail.core.api_error import ApiError
 
-try:
-    async with client.websockets.connect() as socket:
-        await socket.send_subscribe(Subscribe(inbox_ids=["agent@agentmail.to"]))
-        async for event in socket:
-            if isinstance(event, MessageReceivedEvent):
-                await process_email(event.message)
-except ApiError as e:
-    print(f"API error: {e.status_code} - {e.body}")
-except Exception as e:
-    print(f"Connection error: {e}")
+client = AsyncAgentMail()
+
+async def main():
+    try:
+        async with client.websockets.connect() as socket:
+            await socket.send_subscribe(Subscribe(inbox_ids=["agent@agentmail.to"]))
+            async for event in socket:
+                if isinstance(event, MessageReceivedEvent):
+                    await process_email(event.message)
+    except ApiError as e:
+        print(f"API error: {e.status_code} - {e.body}")
+    except Exception as e:
+        print(f"Connection error: {e}")
 ```
 
 ```typescript

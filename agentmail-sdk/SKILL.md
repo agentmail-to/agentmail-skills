@@ -318,6 +318,8 @@ attachment = client.inboxes.messages.get_attachment(
 ```
 
 ```typescript
+import { readFileSync } from "node:fs";
+
 const content = readFileSync("report.pdf").toString("base64");
 
 await client.inboxes.messages.send("agent@agentmail.to", {

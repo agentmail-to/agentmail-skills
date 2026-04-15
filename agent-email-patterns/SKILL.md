@@ -73,7 +73,7 @@ for msg in messages.messages:
 Key rules:
 - Always use `extracted_text` / `extracted_html` for inbound replies to avoid processing the entire quoted chain
 - Track conversation state in your database, not in the email body
-- Use `thread_id` when replying to keep messages grouped in the same thread
+- To keep messages grouped in the same thread, call `client.inboxes.messages.reply(inbox_id, message_id, ...)` with the parent `message_id` — AgentMail routes the reply into the existing thread automatically. There is no `thread_id` parameter on the reply call.
 
 ## Pattern 3: human-in-the-loop drafts
 

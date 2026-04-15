@@ -158,7 +158,11 @@ Always verify signatures in production to prevent spoofed payloads.
 import hmac
 import hashlib
 
-def verify_signature(payload: bytes, signature: str, secret: str) -> bool:
+def verify_signature(payload: bytes, signature: str | None, secret: str) -> bool:
+    # Reject unsigned requests before calling compare_digest, which
+    # raises TypeError on None.
+    if not signature:
+        return False
     expected = hmac.new(
         secret.encode(), payload, hashlib.sha256
     ).hexdigest()
@@ -180,17 +184,28 @@ def handle_webhook():
 ```typescript
 import crypto from "crypto";
 
-function verifySignature(payload: Buffer, signature: string, secret: string): boolean {
+function verifySignature(
+    payload: Buffer,
+    signature: string | undefined,
+    secret: string,
+): boolean {
+    // Reject unsigned requests before touching timingSafeEqual, which
+    // throws RangeError on mismatched buffer lengths.
+    if (!signature) return false;
     const expected = crypto
         .createHmac("sha256", secret)
         .update(payload)
         .digest("hex");
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+    const expectedBuf = Buffer.from(expected, "hex");
+    const signatureBuf = Buffer.from(signature, "hex");
+    if (expectedBuf.length !== signatureBuf.length) return false;
+    return crypto.timingSafeEqual(expectedBuf, signatureBuf);
 }
 
 app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
-    const signature = req.headers["x-agentmail-signature"] as string;
-    if (!verifySignature(req.body, signature, WEBHOOK_SECRET)) {
+    const signature = req.headers["x-agentmail-signature"];
+    const signatureStr = Array.isArray(signature) ? signature[0] : signature;
+    if (!verifySignature(req.body, signatureStr, WEBHOOK_SECRET)) {
         return res.status(401).send("Invalid signature");
     }
     const event = JSON.parse(req.body.toString("utf8"));
