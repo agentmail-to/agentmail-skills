@@ -19,20 +19,26 @@ No installation required. Connect directly to the hosted MCP server.
 
 **URL:** `https://mcp.agentmail.to`
 
+**Authentication:** OAuth 2.0 via Smithery. The remote server does NOT accept an API key in
+env — it returns `401 Bearer error="invalid_token"` and redirects your MCP client through
+the OAuth authorization server at `https://auth.smithery.ai/agentmail`. The MCP client
+handles the browser-based consent flow automatically on first connect.
+
 Add to your MCP client configuration:
 
 ```json
 {
   "mcpServers": {
     "AgentMail": {
-      "url": "https://mcp.agentmail.to",
-      "env": {
-        "AGENTMAIL_API_KEY": "YOUR_API_KEY"
-      }
+      "url": "https://mcp.agentmail.to"
     }
   }
 }
 ```
+
+On first use, your MCP client opens a browser window to complete the Smithery OAuth flow;
+after approval, tokens are cached by the client. If you need API-key auth (no OAuth flow),
+use Option 2 or Option 3 below instead.
 
 ---
 
@@ -94,6 +100,9 @@ Config location:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
+The server accepts the API key in two ways: via `AGENTMAIL_API_KEY` env var, or via the
+`--api-key` CLI flag. Use whichever works in your MCP client's launcher environment.
+
 ```json
 {
   "mcpServers": {
@@ -102,6 +111,20 @@ Config location:
       "env": {
         "AGENTMAIL_API_KEY": "YOUR_API_KEY"
       }
+    }
+  }
+}
+```
+
+If env vars don't propagate through your MCP launcher, pass the key as an argument
+instead:
+
+```json
+{
+  "mcpServers": {
+    "AgentMail": {
+      "command": "/path/to/your/.venv/bin/agentmail-mcp",
+      "args": ["--api-key", "YOUR_API_KEY"]
     }
   }
 }
@@ -117,13 +140,19 @@ which agentmail-mcp
 ### Run Standalone
 
 ```bash
+# Option A: env var
 export AGENTMAIL_API_KEY=your-api-key
 agentmail-mcp
+
+# Option B: CLI flag (useful if env vars aren't available)
+agentmail-mcp --api-key="your-api-key"
 ```
 
 ---
 
 ## Available Tools
+
+The Node MCP server (`npx agentmail-mcp`, Option 1 and Option 2) exposes **17 tools**:
 
 | Tool               | Description                     |
 | ------------------ | ------------------------------- |
@@ -138,6 +167,16 @@ agentmail-mcp
 | `get_thread`       | Get thread details and messages |
 | `get_attachment`   | Download an attachment          |
 | `update_message`   | Update message labels           |
+| `create_draft`     | Create a draft message          |
+| `list_drafts`      | List drafts in an inbox         |
+| `get_draft`        | Get a draft by ID               |
+| `update_draft`     | Update a draft                  |
+| `send_draft`       | Send a previously-created draft |
+| `delete_draft`     | Delete a draft without sending  |
+
+The legacy **Python MCP server** (`pip install agentmail-mcp`, Option 3) is a separate
+codebase with a smaller tool set — it omits the six `*_draft` tools above. For new
+projects, prefer the Node server (Option 1 or Option 2) for full parity with the toolkit.
 
 ---
 

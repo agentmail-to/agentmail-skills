@@ -35,9 +35,9 @@ sales = make_inbox("sales", "sales-v1")
 billing = make_inbox("billing", "billing-v1")
 
 ROUTING = {
-    "support": support.email_address,
-    "sales": sales.email_address,
-    "billing": billing.email_address,
+    "support": support.email,
+    "sales": sales.email,
+    "billing": billing.email,
 }
 
 def classify_email(subject, text):
@@ -117,7 +117,7 @@ if confidence < 0.5:
     # Escalate to L2
     client.inboxes.messages.send(
         l1_inbox_id,
-        to=l2_inbox.email_address,
+        to=l2_inbox.email,
         subject=f"[Escalation] {original_subject}",
         text=f"L1 could not resolve. Customer: {customer_email}\n\nContext: {conversation_summary}",
     )

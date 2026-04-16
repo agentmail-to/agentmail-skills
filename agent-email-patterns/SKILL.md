@@ -62,9 +62,15 @@ client.inboxes.messages.send(
     text="We received your request. Can you clarify the issue?",
 )
 
-# 2. Later: agent reads the reply
-messages = client.inboxes.messages.list(inbox_id, limit=5)
-for msg in messages.messages:
+# 2. Later: agent reads the reply.
+# messages.list() returns MessageItem objects (metadata only — NO body).
+# Fetch the full Message with .get() to access .text / .extracted_text.
+response = client.inboxes.messages.list(inbox_id, limit=5)
+for item in response.messages:
+    msg = client.inboxes.messages.get(
+        inbox_id=item.inbox_id,
+        message_id=item.message_id,
+    )
     # extracted_text strips quoted history and signatures
     new_content = msg.extracted_text or msg.text
     # Feed new_content to your LLM for next response
@@ -153,7 +159,7 @@ Agents can email each other for internal coordination:
 # Support agent escalates to sales
 client.inboxes.messages.send(
     support_inbox_id,
-    to=sales_inbox.email_address,
+    to=sales_inbox.email,
     subject="Lead handoff: Acme Corp",
     text="Customer wants enterprise pricing. Full thread below.",
 )
@@ -169,7 +175,7 @@ Agents that sign up for services need to receive and extract verification codes.
 import re
 
 inbox = client.inboxes.create()
-# Use inbox.email_address to sign up for a service
+# Use inbox.email to sign up for a service
 
 # Listen for OTP via WebSocket
 with client.websockets.connect() as socket:

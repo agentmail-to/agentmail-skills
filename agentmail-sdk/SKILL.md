@@ -51,6 +51,9 @@ const client = new AgentMailClient({ apiKey: "YOUR_API_KEY" });
 
 Create an account and get an API key entirely from code. No browser required.
 
+> Requires `agentmail>=0.4.15` (Python) / `agentmail>=0.x` (TypeScript). If your installed
+> SDK raises `AttributeError: 'AgentMail' object has no attribute 'agent'`, upgrade first.
+
 ```python
 client = AgentMail()  # no api_key needed for sign-up
 response = client.agent.sign_up(
@@ -89,7 +92,7 @@ from agentmail.inboxes.types import CreateInboxRequest
 
 # Create inbox (auto-generated address)
 inbox = client.inboxes.create()
-# inbox.inbox_id, inbox.email_address
+# inbox.inbox_id, inbox.email
 
 # Create with options. All create kwargs go inside a CreateInboxRequest.
 inbox = client.inboxes.create(
@@ -172,13 +175,21 @@ const sent = await client.inboxes.messages.send("agent@agentmail.to", {
 ### List and get
 
 ```python
-# List messages in an inbox
+# List messages in an inbox. Note: .list() returns MessageItem objects
+# (metadata only — subject, from, labels, timestamps, etc.) with NO body
+# content. To read .text / .html / .extracted_text you must fetch the full
+# message with .get().
 response = client.inboxes.messages.list(
     inbox_id="agent@agentmail.to",
     limit=10,                # optional, default varies
     labels=["unread"],       # optional, filter by label
 )
-for msg in response.messages:
+for item in response.messages:
+    # item is a MessageItem (metadata only). Fetch the full Message for body:
+    msg = client.inboxes.messages.get(
+        inbox_id=item.inbox_id,
+        message_id=item.message_id,
+    )
     # Use extracted_text for reply content without quoted history
     content = msg.extracted_text or msg.text
     print(msg.subject, content)
@@ -540,7 +551,7 @@ Custom domains let agents send from your own domain (e.g., `agent@yourdomain.com
 # Add domain. feedback_enabled is required: set True to route
 # bounce/complaint notifications to your inboxes.
 domain = client.domains.create(domain="yourdomain.com", feedback_enabled=True)
-# domain.dns_records -> list of DNS records to add at your registrar
+# domain.records -> list of VerificationRecord objects to add at your registrar
 
 # Verify after DNS records are set
 client.domains.verify(domain_id=domain.domain_id)
@@ -602,8 +613,10 @@ socket.on("open", () => {
     socket.sendSubscribe({ type: "subscribe", inboxIds: ["agent@agentmail.to"] });
 });
 socket.on("message", (event) => {
-    if (event.type === "message.received") {
-        console.log("From:", event.message.from_);
+    // Use event.eventType (not event.type — event.type is always "event")
+    if (event.eventType === "message.received") {
+        // TypeScript uses .from directly; only Python needs .from_ (reserved keyword)
+        console.log("From:", event.message.from);
         console.log("Subject:", event.message.subject);
     }
 });

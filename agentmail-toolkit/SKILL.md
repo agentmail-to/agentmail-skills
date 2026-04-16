@@ -129,47 +129,66 @@ agent = Agent(
 
 ## Available Tools
 
-All frameworks get access to these tools:
+The Node and Python toolkits ship different tool sets. The Node toolkit includes drafts;
+the Python toolkit does not.
 
-| Tool               | Description              |
-| ------------------ | ------------------------ |
-| `create_inbox`     | Create a new email inbox |
-| `list_inboxes`     | List all inboxes         |
-| `get_inbox`        | Get inbox details        |
-| `delete_inbox`     | Delete an inbox          |
-| `send_message`     | Send an email            |
-| `reply_to_message` | Reply to an email        |
-| `forward_message`  | Forward an email         |
-| `list_threads`     | List email threads       |
-| `get_thread`       | Get thread details       |
-| `get_attachment`   | Download an attachment   |
-| `update_message`   | Update message labels    |
+| Tool               | Description                     | Node | Python |
+| ------------------ | ------------------------------- |:----:|:------:|
+| `create_inbox`     | Create a new email inbox        | ✓    | ✓      |
+| `list_inboxes`     | List all inboxes                | ✓    | ✓      |
+| `get_inbox`        | Get inbox details               | ✓    | ✓      |
+| `delete_inbox`     | Delete an inbox                 | ✓    | ✓      |
+| `send_message`     | Send an email                   | ✓    | ✓      |
+| `reply_to_message` | Reply to an email               | ✓    | ✓      |
+| `forward_message`  | Forward an email                | ✓    | ✓      |
+| `update_message`   | Update message labels           | ✓    | ✓      |
+| `list_threads`     | List email threads              | ✓    | ✓      |
+| `get_thread`       | Get thread details              | ✓    | ✓      |
+| `get_attachment`   | Download an attachment          | ✓    | ✓      |
+| `create_draft`     | Create a draft message          | ✓    | —      |
+| `list_drafts`      | List drafts in an inbox         | ✓    | —      |
+| `get_draft`        | Get a draft by ID               | ✓    | —      |
+| `update_draft`     | Update a draft                  | ✓    | —      |
+| `send_draft`       | Send a previously-created draft | ✓    | —      |
+| `delete_draft`     | Delete a draft without sending  | ✓    | —      |
+
+Node toolkit: 17 tools. Python toolkit: 11 tools. If you need draft support from Python,
+call `client.inboxes.drafts.*` directly on the AgentMail SDK client.
 
 ---
 
 ## Custom Configuration
 
-### Custom API Key
+Both toolkits take an existing SDK client as their only constructor argument — they do NOT
+accept `apiKey` / `api_key` directly. If you need a custom API key, construct the SDK
+client with the key first, then pass the client to the toolkit.
+
+### TypeScript
 
 ```typescript
-// TypeScript
-const toolkit = new AgentMailToolkit({ apiKey: "your-api-key" });
+import { AgentMailClient } from "agentmail";
+import { AgentMailToolkit } from "agentmail-toolkit/ai-sdk";
+
+// With a custom API key
+const client = new AgentMailClient({ apiKey: "your-api-key" });
+const toolkit = new AgentMailToolkit(client);
+
+// Or omit the argument to auto-read AGENTMAIL_API_KEY from env
+const defaultToolkit = new AgentMailToolkit();
 ```
 
-```python
-# Python
-toolkit = AgentMailToolkit(api_key="your-api-key")
-```
-
-### Custom Client
+### Python
 
 ```python
-# Python - use existing AgentMail client
 from agentmail import AgentMail
 from agentmail_toolkit.openai import AgentMailToolkit
 
+# With a custom API key
 client = AgentMail(api_key="your-api-key")
 toolkit = AgentMailToolkit(client=client)
+
+# Or omit the argument to auto-read AGENTMAIL_API_KEY from env
+default_toolkit = AgentMailToolkit()
 ```
 
 ---

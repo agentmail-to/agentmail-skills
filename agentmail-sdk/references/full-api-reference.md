@@ -26,7 +26,7 @@ Returns: `api_key`, `inbox_id`, `organization_id`. Sign-up is idempotent.
 
 The Python `inboxes.create` only takes a single `request=CreateInboxRequest(...)` argument — not flat kwargs. Import it from `agentmail.inboxes.types import CreateInboxRequest`. To create inboxes scoped to a pod, use `client.pods.inboxes.create(pod_id, ...)` (which *does* accept flat kwargs).
 
-Inbox fields: `inbox_id`, `email_address`, `username`, `domain`, `display_name`, `pod_id`, `created_at`.
+Inbox response fields: `inbox_id`, `email`, `display_name`, `client_id`, `pod_id`, `created_at`, `updated_at`. Note: `username` and `domain` are only inputs on `CreateInboxRequest` — they are not returned as separate fields on the response; the full address is in `email`.
 
 ## Messages
 
@@ -41,7 +41,12 @@ Inbox fields: `inbox_id`, `email_address`, `username`, `domain`, `display_name`,
 | Get raw | `GET /inboxes/:id/messages/:msg_id/raw` | `client.inboxes.messages.get_raw(inbox_id, message_id)` | `client.inboxes.messages.getRaw(inboxId, messageId)` |
 | Get attachment | `GET /inboxes/:id/messages/:msg_id/attachments/:att_id` | `client.inboxes.messages.get_attachment(inbox_id, message_id, attachment_id)` | `client.inboxes.messages.getAttachment(inboxId, messageId, attachmentId)` |
 
-The Python `inboxes.messages` module has no `delete` method — deleting individual messages is not supported from Python. Delete threads instead (`client.inboxes.threads.delete`). TypeScript exposes `client.inboxes.messages.delete(inboxId, messageId)`.
+Neither SDK has a `messages.delete` method — deleting individual messages is not supported. To remove a conversation, delete the whole thread with `client.inboxes.threads.delete(inbox_id, thread_id)` (Python) / `client.inboxes.threads.delete(inboxId, threadId)` (TypeScript).
+
+Reply cannot change the subject. `reply(...)` has no `subject` parameter — AgentMail
+automatically reuses the parent's subject (prefixed with `Re:` if not already present).
+If you need to change the subject, send a new message with `messages.send(...)` instead
+of replying.
 
 ### Message fields (received)
 
@@ -99,7 +104,7 @@ Top-level `threads.list` lists threads across *all* inboxes in the organization 
 
 | Operation | Method | Python | TypeScript |
 |---|---|---|---|
-| Create | `POST /inboxes/:id/drafts` | `client.inboxes.drafts.create(inbox_id, to?, subject?, text?, html?, cc?, bcc?, reply_to?, attachments?)` | `client.inboxes.drafts.create(inboxId, { to?, subject?, text?, html?, ... })` |
+| Create | `POST /inboxes/:id/drafts` | `client.inboxes.drafts.create(inbox_id, to?, subject?, text?, html?, cc?, bcc?, reply_to?, attachments?, labels?, in_reply_to?, send_at?, client_id?)` | `client.inboxes.drafts.create(inboxId, { to?, subject?, text?, html?, cc?, bcc?, replyTo?, attachments?, labels?, inReplyTo?, sendAt?, clientId? })` |
 | List | `GET /inboxes/:id/drafts` | `client.inboxes.drafts.list(inbox_id)` | `client.inboxes.drafts.list(inboxId)` |
 | Get | `GET /inboxes/:id/drafts/:draft_id` | `client.inboxes.drafts.get(inbox_id, draft_id)` | `client.inboxes.drafts.get(inboxId, draftId)` |
 | Update | `PATCH /inboxes/:id/drafts/:draft_id` | `client.inboxes.drafts.update(inbox_id, draft_id, ...)` | `client.inboxes.drafts.update(inboxId, draftId, { ... })` |
@@ -113,9 +118,12 @@ Top-level `threads.list` lists threads across *all* inboxes in the organization 
 | Create | `POST /webhooks` | `client.webhooks.create(url, event_types, inbox_ids?, pod_ids?, client_id?)` | `client.webhooks.create({ url, eventTypes, inboxIds?, podIds?, clientId? })` |
 | List | `GET /webhooks` | `client.webhooks.list()` | `client.webhooks.list()` |
 | Get | `GET /webhooks/:id` | `client.webhooks.get(webhook_id)` | `client.webhooks.get(webhookId)` |
+| Update | `PATCH /webhooks/:id` | `client.webhooks.update(webhook_id, add_inbox_ids?, remove_inbox_ids?, add_pod_ids?, remove_pod_ids?)` | `client.webhooks.update(webhookId, { addInboxIds?, removeInboxIds?, addPodIds?, removePodIds? })` |
 | Delete | `DELETE /webhooks/:id` | `client.webhooks.delete(webhook_id)` | `client.webhooks.delete(webhookId)` |
 
-`event_types` / `eventTypes` is **required**. Typed values: `message.received`, `message.sent`, `message.delivered`, `message.bounced`, `message.complained`, `message.rejected`, `domain.verified`. Runtime-only (accepted but not in the SDK Literal): `message.received.spam`, `message.received.blocked`.
+`event_types` / `eventTypes` is **required** on create. Typed values: `message.received`, `message.sent`, `message.delivered`, `message.bounced`, `message.complained`, `message.rejected`, `domain.verified`. Runtime-only (accepted but not in the SDK Literal): `message.received.spam`, `message.received.blocked`.
+
+`webhooks.update` can ONLY add or remove `inbox_ids` and `pod_ids`. You cannot change `url` or `event_types` on an existing webhook — to change them, delete the webhook and create a new one.
 
 ## Domains
 
