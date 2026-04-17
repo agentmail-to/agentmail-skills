@@ -108,8 +108,8 @@ async function main() {
     });
 
     socket.on("message", (event: AgentMail.MessageReceivedEvent) => {
-        if (event.type === "message.received") {
-            console.log("From:", event.message.from_);
+        if (event.eventType === "message.received") {
+            console.log("From:", event.message.from);
             console.log("Subject:", event.message.subject);
         }
     });
@@ -142,7 +142,7 @@ function useAgentMailWebSocket(apiKey: string, inboxIds: string[]) {
                 socket.sendSubscribe({ type: "subscribe", inboxIds });
             });
             socket.on("message", (event) => {
-                if (event.type === "message.received") {
+                if (event.eventType === "message.received") {
                     setLastMessage(event);
                 }
             });
@@ -204,21 +204,24 @@ socket.sendSubscribe({
 
 ## Message properties
 
-The `event.message` object on received events:
+The `event.message` object on received events (Python snake_case / TypeScript camelCase):
 
-| Property | Description |
-|---|---|
-| `inbox_id` | Inbox that received the email |
-| `message_id` | Unique message ID |
-| `thread_id` | Conversation thread ID |
-| `from_` | Sender email address |
-| `to` | Recipients list |
-| `subject` | Subject line |
-| `text` | Plain text body |
-| `html` | HTML body |
-| `extracted_text` | Reply content only, quoted history stripped |
-| `attachments` | List of attachments |
-| `labels` | List of labels |
+| Python           | TypeScript       | Description                                    |
+|------------------|------------------|------------------------------------------------|
+| `inbox_id`       | `inboxId`        | Inbox that received the email                  |
+| `message_id`     | `messageId`      | Unique message ID                              |
+| `thread_id`      | `threadId`       | Conversation thread ID                         |
+| `from_`          | `from`           | Sender address (string)                        |
+| `to`             | `to`             | Recipients (list of strings)                   |
+| `subject`        | `subject`        | Subject line                                   |
+| `text`           | `text`           | Plain text body                                |
+| `html`           | `html`           | HTML body                                      |
+| `extracted_text` | `extractedText`  | Reply content only, quoted history stripped    |
+| `extracted_html` | `extractedHtml`  | Reply HTML only, quoted history stripped       |
+| `attachments`    | `attachments`    | List of attachments                            |
+| `labels`         | `labels`         | List of labels                                 |
+
+Python uses `from_` because `from` is a reserved keyword. TypeScript uses `from` directly.
 
 ## Error handling
 

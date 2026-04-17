@@ -113,9 +113,10 @@ agentmail webhooks list
 ### Domains
 
 ```bash
-# Add a custom domain (omit --feedback-enabled to disable it,
-# pass the flag alone to enable bounce/complaint notifications)
-agentmail domains create --domain example.com
+# Add a custom domain. --feedback-enabled is REQUIRED:
+# pass the flag to route bounce/complaint notifications to your inboxes.
+# The CLI has no way to create a domain without this flag.
+agentmail domains create --domain example.com --feedback-enabled
 
 # Verify domain DNS
 agentmail domains verify --domain-id <domain_id>

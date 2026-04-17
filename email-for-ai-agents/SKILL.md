@@ -93,7 +93,7 @@ Agent signs up for a service, receives verification email, extracts OTP.
 import re
 
 signup_inbox = client.inboxes.create()
-# Use signup_inbox.email_address to register on a website
+# Use signup_inbox.email to register on a website
 
 # Wait for OTP
 with client.websockets.connect() as socket:
