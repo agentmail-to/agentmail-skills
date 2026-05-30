@@ -1,6 +1,30 @@
 ---
 name: agentmail-cli
 description: Send and receive emails programmatically using the AgentMail CLI. Use when agents need to manage inboxes, send/receive emails, handle threads, drafts, webhooks, and domains via command line.
+metadata:
+  hermes:
+    tags: [email, agentmail, cli]
+    category: email
+  openclaw:
+    requires:
+      env:
+        - AGENTMAIL_API_KEY
+      bins:
+        - agentmail
+    primaryEnv: AGENTMAIL_API_KEY
+    envVars:
+      - name: AGENTMAIL_API_KEY
+        required: true
+        description: AgentMail API key.
+    install:
+      - kind: node
+        package: agentmail-cli
+        bins: [agentmail]
+required_environment_variables:
+  - name: AGENTMAIL_API_KEY
+    prompt: AgentMail API key
+    help: Get or manage keys in the AgentMail console; locally this user's key is stored in the Hermes environment.
+    required_for: AgentMail CLI API access
 ---
 
 # AgentMail CLI
