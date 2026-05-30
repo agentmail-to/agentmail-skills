@@ -4,6 +4,7 @@ description: Send and receive emails programmatically using the AgentMail CLI. U
 metadata:
   hermes:
     tags: [email, agentmail, cli]
+    category: email
   openclaw:
     requires:
       env:
