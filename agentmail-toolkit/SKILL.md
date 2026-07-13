@@ -129,31 +129,18 @@ agent = Agent(
 
 ## Available Tools
 
-The Node and Python toolkits ship different tool sets. The Node toolkit includes drafts;
-the Python toolkit does not.
+Discover the installed toolkit's catalog at runtime instead of relying on a copied count:
 
-| Tool               | Description                     | Node | Python |
-| ------------------ | ------------------------------- |:----:|:------:|
-| `create_inbox`     | Create a new email inbox        | ✓    | ✓      |
-| `list_inboxes`     | List all inboxes                | ✓    | ✓      |
-| `get_inbox`        | Get inbox details               | ✓    | ✓      |
-| `delete_inbox`     | Delete an inbox                 | ✓    | ✓      |
-| `send_message`     | Send an email                   | ✓    | ✓      |
-| `reply_to_message` | Reply to an email               | ✓    | ✓      |
-| `forward_message`  | Forward an email                | ✓    | ✓      |
-| `update_message`   | Update message labels           | ✓    | ✓      |
-| `list_threads`     | List email threads              | ✓    | ✓      |
-| `get_thread`       | Get thread details              | ✓    | ✓      |
-| `get_attachment`   | Download an attachment          | ✓    | ✓      |
-| `create_draft`     | Create a draft message          | ✓    | —      |
-| `list_drafts`      | List drafts in an inbox         | ✓    | —      |
-| `get_draft`        | Get a draft by ID               | ✓    | —      |
-| `update_draft`     | Update a draft                  | ✓    | —      |
-| `send_draft`       | Send a previously-created draft | ✓    | —      |
-| `delete_draft`     | Delete a draft without sending  | ✓    | —      |
+```typescript
+new AgentMailToolkit().getTools().map((tool) => tool.name)
+```
 
-Node toolkit: 17 tools. Python toolkit: 11 tools. If you need draft support from Python,
-call `client.inboxes.drafts.*` directly on the AgentMail SDK client.
+```python
+[tool.name for tool in AgentMailToolkit().get_tools()]
+```
+
+The TypeScript and Python packages can release on different schedules. Check the installed
+package's catalog when a workflow depends on a specific tool.
 
 ---
 
