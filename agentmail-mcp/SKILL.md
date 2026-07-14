@@ -79,36 +79,13 @@ Config location:
 
 ---
 
-## Available Tools
+## Tool Discovery
 
-The hosted MCP server (`https://mcp.agentmail.to/mcp`) exposes **24 tools**:
+MCP clients obtain the current tool catalog and schemas directly from the hosted runtime. The same generated contract is published at:
 
-| Tool                | Description                                                                                          |
-| -------------------- | ----------------------------------------------------------------------------------------------------- |
-| `list_inboxes`       | List email inboxes, paginated.                                                                        |
-| `get_inbox`          | Get an inbox by ID.                                                                                    |
-| `create_inbox`       | Create a new email inbox. Optionally specify username, domain, display name, and metadata.             |
-| `update_inbox`       | Update an inbox's display name or metadata (metadata keys merge; null removes).                        |
-| `delete_inbox`       | Delete an inbox by ID.                                                                                  |
-| `list_threads`       | List email threads in an inbox. Filter by labels, sender, recipient, subject, or before/after datetime, paginated. |
-| `search_threads`     | Full-text search threads in an inbox, ranked by relevance (spam/trash excluded).                        |
-| `get_thread`         | Get a thread by ID, including its messages.                                                             |
-| `get_attachment`     | Get an attachment from a thread. Returns metadata and a download URL, plus extracted text for PDF/DOCX. |
-| `update_thread`      | Update a thread's labels (add or remove). System labels cannot be modified.                             |
-| `delete_thread`      | Delete a thread from an inbox.                                                                          |
-| `list_messages`      | List messages in an inbox. Filter by labels, sender, recipient, subject, or before/after datetime, paginated. |
-| `search_messages`    | Full-text search messages in an inbox, ranked by relevance (spam/trash excluded).                       |
-| `send_message`       | Send an email from an inbox to one or more recipients.                                                  |
-| `reply_to_message`   | Reply to a message in its thread (replyAll to include all original recipients).                         |
-| `forward_message`    | Forward a message to new recipients.                                                                    |
-| `update_message`     | Update a message's labels (add or remove).                                                              |
-| `create_draft`       | Create a draft email. Use sendAt (ISO 8601) to schedule it.                                             |
-| `list_drafts`        | List drafts in an inbox. Filter by labels (e.g. "scheduled").                                           |
-| `get_draft`          | Get a draft by ID, including content, status, and scheduled send time.                                  |
-| `update_draft`       | Update a draft. Use sendAt to reschedule.                                                                |
-| `send_draft`         | Send a draft immediately (converted to a sent message and deleted).                                     |
-| `delete_draft`       | Delete a draft. Also cancels a scheduled send.                                                          |
-| `auth_me`            | Get the identity and scope of the authenticated credential (organization, pod, inbox IDs).              |
+`https://github.com/agentmail-to/agentmail-mcp/blob/main/mcp-manifest.json`
+
+Do not rely on a copied tool count. OAuth sessions can receive additional organization-selection tools.
 
 ---
 
@@ -159,9 +136,8 @@ complete the browser-based sign-in flow instead.
 
 ---
 
-## Deprecated: Local Packages
+## Stdio Compatibility
 
-The local `npx agentmail-mcp` (Node) and `pip install agentmail-mcp` (Python) stdio servers
-are deprecated in favor of the hosted server above. They are no longer actively maintained
-and may be removed in a future release — use the [Remote MCP Server](#remote-mcp-server-recommended)
-instead.
+For clients that cannot connect to remote MCP servers, the supported npm and PyPI
+`agentmail-mcp` packages are thin stdio bridges to the same hosted runtime. They discover
+tools dynamically and do not contain separate AgentMail tool logic.
