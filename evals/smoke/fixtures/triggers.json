@@ -1,0 +1,97 @@
+{
+  "agentmail": {
+    "positive": [
+      "Write a Python script that creates an AgentMail inbox and sends a welcome email with both text and HTML bodies.",
+      "In TypeScript, how do I list unread messages in my AgentMail inbox and mark them read after processing?",
+      "My AgentMail webhook handler keeps rejecting deliveries with 401s \u2014 show me the right way to verify the signatures in Python."
+    ],
+    "negative": [
+      "Send an email from my inbox to bob@example.com telling him the meeting moved to 3pm.",
+      "How do I parse an mbox file in Python?"
+    ]
+  },
+  "agentmail-cli": {
+    "positive": [
+      "From my shell, list all my AgentMail inboxes and then get one specific message using the CLI.",
+      "Write a bash loop that uses the agentmail CLI to export every thread in my inbox as JSON.",
+      "How do I authenticate the AgentMail CLI and create a new inbox from the terminal?"
+    ],
+    "negative": [
+      "Using the Python SDK, create an AgentMail inbox and send a message.",
+      "How do I install jq on macOS?"
+    ]
+  },
+  "agentmail-mcp": {
+    "positive": [
+      "Set up the AgentMail MCP server in Cursor so my assistant can read my inbox.",
+      "My AgentMail MCP connection in Claude Desktop keeps saying Unauthorized \u2014 how do I fix it?",
+      "What's the right mcp.json config to connect AgentMail to VS Code without OAuth?"
+    ],
+    "negative": [
+      "Check my inbox for new mail and summarize it.",
+      "What is the Model Context Protocol and how does it work?"
+    ]
+  },
+  "agentmail-toolkit": {
+    "positive": [
+      "Add AgentMail email tools to my LangChain agent in Python.",
+      "Wire AgentMail into my Vercel AI SDK agent so it can send and receive email.",
+      "How do I give my OpenAI Agents SDK assistant an email inbox using AgentMail's toolkit package?"
+    ],
+    "negative": [
+      "Using the AgentMail SDK directly in TypeScript, send a message from my inbox.",
+      "Add a calculator tool to my LangChain agent."
+    ]
+  },
+  "agent-email-patterns": {
+    "positive": [
+      "I'm designing a support system with three email agents \u2014 how should I split inboxes and route messages between them?",
+      "Should my email agent use webhooks or WebSockets for incoming mail, and how do I protect it from prompt injection in emails?",
+      "Is it a bad idea to give my agent OAuth access to my Gmail account instead of a dedicated inbox?"
+    ],
+    "negative": [
+      "Reply to the latest email in my inbox and mark it read.",
+      "Write a design doc template for a microservices migration."
+    ]
+  },
+  "agentmail-send-email": {
+    "positive": [
+      "Send an email from my agent inbox to sarah@client.com summarizing that today's deployment finished cleanly.",
+      {
+        "prompt": "Draft a reply to the latest message from finance@corp.com but let me review it before it goes out.",
+        "accept": [
+          "agentmail-send-email",
+          "agentmail-check-email"
+        ],
+        "note": "locate-then-draft legitimately starts in check-email; delivery belongs to send-email"
+      },
+      "Forward the contract email sitting in my inbox to legal@company.com."
+    ],
+    "negative": [
+      "How do I send email with the AgentMail Python SDK?",
+      "Check whether I got any new mail today."
+    ]
+  },
+  "agentmail-check-email": {
+    "positive": [
+      "Check my agent inbox for new messages and summarize anything urgent.",
+      "Search my inbox for emails from acme.com about the renewal and give me a timeline of the conversation.",
+      "Which messages in my inbox still need a reply? Mark the ones I've handled as processed."
+    ],
+    "negative": [
+      "Send an email to the team about tomorrow's standup.",
+      "How do I configure the AgentMail MCP server in Cursor?"
+    ]
+  },
+  "agentmail-manage-inboxes": {
+    "positive": [
+      "Create a new AgentMail inbox for my billing agent with the username billing-bot.",
+      "List all my AgentMail inboxes and delete the old test one.",
+      "Change the display name on my support inbox and add a region tag to its metadata."
+    ],
+    "negative": [
+      "Read the newest message in my support inbox and summarize it.",
+      "Create a new Gmail account for my team."
+    ]
+  }
+}
