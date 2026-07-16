@@ -1,0 +1,13 @@
+{
+  "name": "agentmail",
+  "skills": [
+    "agentmail",
+    "agentmail-cli",
+    "agentmail-mcp",
+    "agentmail-toolkit",
+    "agent-email-patterns",
+    "agentmail-send-email",
+    "agentmail-check-email",
+    "agentmail-manage-inboxes"
+  ]
+}

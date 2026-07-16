@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    "agentmail",
+    "agentmail-cli",
+    "agentmail-mcp",
+    "agentmail-toolkit",
+    "agent-email-patterns",
+    "agentmail-send-email",
+    "agentmail-check-email",
+    "agentmail-manage-inboxes"
+  ],
+  "aliases": {
+    "agentmail-sdk": {
+      "target": "agentmail",
+      "description": "Deprecated alias of the agentmail skill, kept so existing installs and pinned URLs keep resolving. Prefer installing agentmail; this is an identical generated copy covering AgentMail SDK usage in TypeScript and Python.",
+      "stubs": {
+        "references/full-api-reference.md": "# Moved\n\nThe API trap list now lives in the [SKILL.md API gotchas section](../SKILL.md); full per-language usage is in [python.md](python.md) and [typescript.md](typescript.md).\n"
+      }
+    },
+    "email-for-ai-agents": {
+      "target": "agent-email-patterns",
+      "description": "Deprecated alias of the agent-email-patterns skill, kept so existing installs and pinned URLs keep resolving. Prefer installing agent-email-patterns; this is an identical generated copy covering agent email architecture, security, and provider tradeoffs.",
+      "stubs": {
+        "references/security-risks.md": "# Moved\n\nThe security content now lives in [threat-model.md](threat-model.md).\n",
+        "references/infrastructure-comparison.md": "# Moved\n\nDurable provider constraints now live in the [SKILL.md Provider landscape section](../SKILL.md).\n"
+      }
+    }
+  },
+  "pluginExport": {
+    "legacyIds": {
+      "agentmail-send-email": "send-email",
+      "agentmail-check-email": "check-email",
+      "agentmail-manage-inboxes": "manage-inboxes"
+    },
+    "includeAliases": ["email-for-ai-agents"],
+    "mcpDependent": ["agentmail-send-email", "agentmail-check-email", "agentmail-manage-inboxes"],
+    "display": {
+      "agentmail": {"name": "AgentMail SDK", "short": "Build AgentMail SDK integrations", "prompt": "Use $agentmail to implement a current AgentMail SDK workflow."},
+      "agentmail-cli": {"name": "AgentMail CLI", "short": "Operate AgentMail from a shell", "prompt": "Use $agentmail-cli to run AgentMail operations from the terminal."},
+      "agentmail-mcp": {"name": "AgentMail MCP Setup", "short": "Configure the AgentMail MCP server", "prompt": "Use $agentmail-mcp to configure or troubleshoot the AgentMail MCP connection."},
+      "agentmail-toolkit": {"name": "AgentMail Toolkit", "short": "Add AgentMail tools to agent frameworks", "prompt": "Use $agentmail-toolkit to wire AgentMail into an agent framework."},
+      "agent-email-patterns": {"name": "Agent Email Patterns", "short": "Design agent email architecture safely", "prompt": "Use $agent-email-patterns to design the agent email architecture and threat model."},
+      "agentmail-send-email": {"name": "Send Email", "short": "Draft and send AgentMail email", "prompt": "Use $send-email to prepare and send an AgentMail message safely."},
+      "agentmail-check-email": {"name": "Check Email", "short": "Read and triage AgentMail inboxes", "prompt": "Use $check-email to read, search, and triage AgentMail messages."},
+      "agentmail-manage-inboxes": {"name": "Manage Inboxes", "short": "Create and manage AgentMail inboxes", "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."},
+      "email-for-ai-agents": {"name": "Email for AI Agents (deprecated)", "short": "Deprecated alias of agent-email-patterns", "prompt": "Use $agent-email-patterns instead; this alias is kept for compatibility."}
+    }
+  },
+  "pins": {
+    "python": {"agentmail": "0.5.6"},
+    "node": {"agentmail": "0.5.14", "agentmail-toolkit": "0.5.0", "agentmail-cli": "0.7.12"}
+  },
+  "backend": {
+    "repo": "agentmail-to/agentmail-mcp",
+    "manifestPath": "mcp-manifest.json"
+  }
+}

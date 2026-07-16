@@ -1,0 +1,73 @@
+name: Validate skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Structure, denylist, matrix drift, aliases
+        run: python3 scripts/skills.py validate
+
+      - name: Generated outputs match source
+        run: python3 scripts/skills.py build --check
+
+      - name: Python SDK signatures match documented usage
+        run: |
+          python3 -m pip install "agentmail==0.5.6"
+          python3 tests/test_sdk_signatures.py
+
+      - name: Webhook verification fixtures (Svix round-trip)
+        run: |
+          python3 -m pip install svix
+          python3 tests/test_webhook_verification.py
+
+      - name: Type-check TypeScript SDK examples, run webhook fixture
+        run: |
+          tmp="$(mktemp -d)"
+          cp tests/sdk_typescript.ts tests/webhook_typescript.ts tests/webhook_verification.ts tests/package.json "$tmp/"
+          cd "$tmp"
+          npm install --no-save "agentmail@0.5.14" "agentmail-toolkit@0.5.0" "ai@6" "langchain@1" "svix" "express" "@types/express" "typescript@5.9.3" "tsx" "@types/node@22"
+          ./node_modules/.bin/tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext sdk_typescript.ts webhook_typescript.ts webhook_verification.ts
+          ./node_modules/.bin/tsx webhook_verification.ts
+
+      - name: CLI verbs are real (get, never retrieve)
+        run: |
+          npx -y agentmail-cli@0.7.12 inboxes --help | tee /tmp/inboxes-help
+          npx -y agentmail-cli@0.7.12 inboxes:messages --help | tee /tmp/messages-help
+          grep -q "get" /tmp/inboxes-help
+          grep -q "get" /tmp/messages-help
+          ! grep -q "retrieve" /tmp/inboxes-help
+          ! grep -q "retrieve" /tmp/messages-help
+
+  backend-drift:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: agentmail-to/agentmail-mcp
+          path: .backend
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Contract drift check (non-blocking signal)
+        run: python3 scripts/skills.py sync --backend .backend --check || echo "::warning::backend contract drifted — open a skills update PR"
