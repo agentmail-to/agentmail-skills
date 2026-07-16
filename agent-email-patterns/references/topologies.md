@@ -2,6 +2,14 @@
 
 Architecture patterns for systems where multiple AI agents communicate over email.
 
+## Contents
+
+- [Topology 1: hub-and-spoke (router agent)](#topology-1-hub-and-spoke-router-agent)
+- [Topology 2: direct (peer-to-peer)](#topology-2-direct-peer-to-peer)
+- [Topology 3: hierarchical (escalation chain)](#topology-3-hierarchical-escalation-chain)
+- [Multi-tenant with pods](#multi-tenant-with-pods)
+- [Choosing a topology](#choosing-a-topology)
+
 ## Topology 1: hub-and-spoke (router agent)
 
 A central router agent receives all inbound email and dispatches to specialist agents.
