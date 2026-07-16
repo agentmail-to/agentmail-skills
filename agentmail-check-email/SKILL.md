@@ -1,6 +1,6 @@
 ---
 name: agentmail-check-email
-description: Read, search, summarize, and triage AgentMail inboxes through the connected MCP server. Use when the user asks to check for new mail or email, find messages or threads, summarize conversations, inspect attachments, manage read/unread labels, or identify messages needing a reply; do not use for sending or drafting (agentmail-send-email), inbox administration (agentmail-manage-inboxes), or MCP connection setup (agentmail-mcp).
+description: Read, search, summarize, and triage AgentMail inboxes through the connected MCP server. Use for ANY request to look at, search, or process mail — even a simple 'search my inbox for X' or 'any new mail?'; the read workflow applies regardless of task size. Also use to summarize conversations, inspect attachments, manage read/unread labels, or find messages needing a reply; do not use for sending or drafting (agentmail-send-email), inbox administration (agentmail-manage-inboxes), or MCP connection setup (agentmail-mcp).
 ---
 
 # Check Email

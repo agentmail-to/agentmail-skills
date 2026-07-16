@@ -1,6 +1,6 @@
 ---
 name: agentmail-send-email
-description: Draft, send, reply to, or forward email through the connected AgentMail MCP server. Use when the user asks to compose an email or AgentMail message, create or schedule a draft, send to named recipients, reply to a specific email, or forward an existing message; do not use for reading or triaging mail (agentmail-check-email), inbox administration (agentmail-manage-inboxes), or MCP connection setup (agentmail-mcp).
+description: Draft, send, reply to, or forward email through the connected AgentMail MCP server. Use for ANY request to send, reply to, or forward mail — even a quick one-line send or a simple forward that looks like a single tool call; the sending rules apply regardless of task size. Also use to compose messages, create or schedule drafts for review, or send to named recipients; do not use for reading or triaging mail (agentmail-check-email), inbox administration (agentmail-manage-inboxes), or MCP connection setup (agentmail-mcp).
 ---
 
 # Send Email
