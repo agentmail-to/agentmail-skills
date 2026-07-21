@@ -1,6 +1,6 @@
 ---
 name: agentmail
-description: Build with the AgentMail TypeScript or Python SDK for inbox, message, thread, draft, attachment, domain, allow/block list, webhook, and WebSocket workflows, including programmatic agent sign-up, domain/DNS administration, and deliverability triage (bounces, spam, blocked mail). Use when implementing or reviewing AgentMail API code; do not use for direct mailbox operations, CLI usage, MCP setup, or framework-toolkit integration.
+description: Build with the AgentMail TypeScript or Python SDK for inbox, message, thread, draft, attachment, domain, allow/block list, pod, webhook, and WebSocket workflows, including programmatic agent sign-up, domain/DNS administration, and deliverability triage (bounces, spam, blocked mail). Use when implementing or reviewing AgentMail API code; do not use for direct mailbox operations, CLI usage, MCP setup, or framework-toolkit integration.
 ---
 
 # AgentMail SDK
@@ -79,6 +79,7 @@ Traps that don't match intuition — read these before writing code, not after i
 - **The metrics method is `.query`, not `.get`.**
 - **`max_retries` is constructor-level in TypeScript only.** Python overrides per call via `request_options`; TypeScript accepts `maxRetries` in the constructor.
 - **Python `inboxes.create` takes a request object, not flat kwargs** — but `client.pods.inboxes.create` *does* take flat kwargs.
+- **`get_attachment` returns a signed URL, not bytes.** The URL expires in ~1 hour and points at `cdn.agentmail.to` — fetch immediately, never persist the URL. See [python.md](references/python.md#drafts-and-attachments) / [typescript.md](references/typescript.md#drafts-and-attachments).
 - **Two runtime-only event types exist:** `message.received.spam` and `message.received.blocked` are accepted by the API but absent from the SDK's typed Literal; type checkers flag them as plain strings — expected, not a bug.
 
 ## Agent sign-up
@@ -114,4 +115,4 @@ await authed.agent.verify({ otpCode: "123456" });
 - Read [websockets.md](references/websockets.md) for current event discriminators and subscriptions.
 - Read [deliverability.md](references/deliverability.md) when triaging "my agent's email didn't arrive."
 
-For scoped API keys, permissions, metrics, and pod administration, consult the current [AgentMail API reference](https://docs.agentmail.to/api-reference) as the source of truth for exact signatures.
+For scoped API keys, permissions, and metrics, consult the current [AgentMail API reference](https://docs.agentmail.to/api-reference) as the source of truth for exact signatures.

@@ -10,6 +10,7 @@ These examples target `agentmail` 0.5.14. Path parameters are positional; reques
 - [Pagination](#pagination)
 - [Errors and retries](#errors-and-retries)
 - [Drafts and attachments](#drafts-and-attachments)
+- [Pods (multi-tenant isolation)](#pods-multi-tenant-isolation)
 
 ## Inboxes
 
@@ -127,4 +128,26 @@ const attachment = await client.inboxes.messages.getAttachment(
 );
 ```
 
+`getAttachment` does **not** return file bytes. It returns an `AttachmentResponse` with `downloadUrl` (a CloudFront-signed URL), `expiresAt` (~1 hour after the call), `filename`, `size`, and `contentType`. Fetch the bytes immediately; never persist the URL — it expires. Note the positional path params, per the Core rules.
+
+```typescript
+const att = await client.inboxes.messages.getAttachment(inbox.inboxId, message.messageId, "att_456");
+const res = await fetch(att.downloadUrl);
+if (!res.ok) throw new Error(`Attachment fetch failed: ${res.status}`);
+const fileBytes = Buffer.from(await res.arrayBuffer());
+```
+
+Signed URLs point at `cdn.agentmail.to`, not `api.agentmail.to` — an egress allowlist with only the API host will fail the fetch even though `getAttachment` succeeded.
+```
+
 Send attachments with either base64 `content` or a supported `url`, plus a filename and content type.
+
+
+## Pods (multi-tenant isolation)
+
+```typescript
+const pod = await client.pods.create({ name: "customer-acme", clientId: "pod-acme-v1" });
+const inbox = await client.pods.inboxes.create(pod.podId, { username: "notifications", clientId: "acme-notif-v1" });
+const inboxes = await client.pods.inboxes.list(pod.podId);
+const threads = await client.pods.threads.list(pod.podId); // top-level threads.list has no pod filter
+```
