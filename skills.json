@@ -44,12 +44,8 @@
       "agentmail-send-email": {"name": "Send Email", "short": "Draft and send AgentMail email", "prompt": "Use $send-email to prepare and send an AgentMail message safely."},
       "agentmail-check-email": {"name": "Check Email", "short": "Read and triage AgentMail inboxes", "prompt": "Use $check-email to read, search, and triage AgentMail messages."},
       "agentmail-manage-inboxes": {"name": "Manage Inboxes", "short": "Create and manage AgentMail inboxes", "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."},
-      "email-for-ai-agents": {"name": "Email for AI Agents (deprecated)", "short": "Deprecated alias of agent-email-patterns", "prompt": "Use $agent-email-patterns instead; this alias is kept for compatibility."}
+      "email-for-ai-agents": {"name": "Email for AI Agents (deprecated)", "short": "Deprecated alias of agent-email-patterns", "prompt": "Use $email-for-ai-agents only for compatibility; prefer $agent-email-patterns."}
     }
-  },
-  "pins": {
-    "python": {"agentmail": "0.5.6"},
-    "node": {"agentmail": "0.5.14", "agentmail-toolkit": "0.5.0", "agentmail-cli": "0.7.12"}
   },
   "backend": {
     "repo": "agentmail-to/agentmail-mcp",

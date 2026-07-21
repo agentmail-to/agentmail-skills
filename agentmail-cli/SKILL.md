@@ -94,8 +94,9 @@ agentmail webhooks list
 ## Domains
 
 ```bash
-# The CLI requires --feedback-enabled; set it to route bounce/complaint
-# notifications to your inboxes.
+agentmail domains create --domain example.com
+
+# Optional: route bounce/complaint notifications to your inboxes.
 agentmail domains create --domain example.com --feedback-enabled
 
 agentmail domains verify --domain-id <domain_id>

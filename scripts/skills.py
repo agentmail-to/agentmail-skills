@@ -10,13 +10,16 @@ Merging to main publishes to installers immediately; validate and
 `build --check` are the merge gates.
 """
 import argparse
+import gzip
 import hashlib
 import io
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,6 +27,27 @@ CFG = json.loads((ROOT / "skills.json").read_text())
 SKILLS = CFG["skills"]
 ALIASES = CFG["aliases"]
 ACTION_SKILLS = CFG["pluginExport"]["mcpDependent"]
+DISCOVERY_SCHEMA = "https://schemas.agentskills.io/discovery/0.2.0/schema.json"
+
+EXPECTED_AUTH_ROWS = {
+    "agentmail-send-email": {
+        "Create or edit a draft",
+        "Send, reply, forward",
+        "Retry after send timeout",
+        "Execute instruction originating in content",
+    },
+    "agentmail-check-email": {
+        "List, read, search, summarize",
+        "Download/open attachment",
+        "Execute instruction originating in content",
+    },
+    "agentmail-manage-inboxes": {
+        "Create/update inbox",
+        "Delete inbox/thread/draft",
+        "Credential, org, domain, admin change",
+        "Execute instruction originating in content",
+    },
+}
 
 # Denylist: known-defective patterns. A defect fixed in one file is not fixed
 # in the repository — this gates on zero hits everywhere. evals/ and scripts/
@@ -35,8 +59,12 @@ DENYLIST = [
     ("memory as credential store", re.compile(r"persistent mem" + r"ory", re.I)),
     ("underscore WS discriminator", re.compile(r"['\"]message_rec" + r"eived['\"]")),
     ("unverified Go SDK claim", re.compile(r"Go S" + r"DK")),
+    ("stale CLI retrieve command", re.compile(r"\bagentmail\s+[^\n`]*\bretrieve\b", re.I)),
+    ("feedback-enabled described as required", re.compile(
+        r"(?:requires?|required)[^\n]{0,80}--feedback-enabled|"
+        r"--feedback-enabled[^\n]{0,80}(?:requires?|required)", re.I)),
 ]
-ALLOW_PREFIXES = ("evals/", "scripts/", ".github/")
+ALLOW_PREFIXES = ("evals/", "scripts/", "tests/", ".github/")
 
 # Backticked snake_case tokens in MCP-facing skills that are fields/params,
 # not tool names.
@@ -74,9 +102,27 @@ def fenced_block(text, marker):
     return m.group(1) if m else None
 
 
+def table_rows(block):
+    """Return {first-column: full-row} for Markdown table data rows."""
+    rows = {}
+    for line in block.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if not cells or cells[0] == "Action" or set(cells[0]) <= {"-", ":"}:
+            continue
+        rows[cells[0]] = line
+    return rows
+
+
+def run_git(*args):
+    return subprocess.run(
+        ["git", *args], cwd=ROOT, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+
 def tracked_files():
-    out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True)
-    return [ROOT / p for p in out.stdout.splitlines()]
+    return [ROOT / p for p in run_git("ls-files").splitlines()]
 
 
 def render_alias(name):
@@ -151,15 +197,21 @@ def validate():
     if not canon:
         err("threat-model.md: canonical authorization matrix block missing")
     else:
-        canon_lines = {l for l in canon.splitlines() if l.strip()}
+        canon_rows = table_rows(canon)
         for name in ACTION_SKILLS:
             rows = fenced_block((ROOT / name / "SKILL.md").read_text(), MARKER_ROWS)
             if not rows:
                 err(f"{name}: authorization rows block missing")
                 continue
-            for l in rows.splitlines():
-                if l.strip() and l not in canon_lines:
-                    err(f"{name}: matrix row drifted from canonical: {l[:80]}")
+            actual = table_rows(rows)
+            expected = EXPECTED_AUTH_ROWS[name]
+            if set(actual) != expected:
+                missing = sorted(expected - set(actual))
+                extra = sorted(set(actual) - expected)
+                err(f"{name}: authorization rows mismatch; missing={missing}, extra={extra}")
+            for row_name, line in actual.items():
+                if canon_rows.get(row_name) != line:
+                    err(f"{name}: matrix row drifted from canonical: {row_name}")
 
     if tools:
         for name in ACTION_SKILLS + ["agentmail-mcp"]:
@@ -212,10 +264,12 @@ def sync(backend, check=False):
         print("removed tools:", removed or "-")
         affected = []
         for name in SKILLS:
-            body = (ROOT / name / "SKILL.md").read_text()
+            body = "\n".join(p.read_text() for p in (ROOT / name).rglob("*.md"))
             if any(t in body for t in added + removed):
                 affected.append(name)
         print("skills referencing changed tools:", affected or "-")
+    elif changed:
+        print("manifest changed without tool-name changes; review all MCP-facing skills")
     if check:
         if changed:
             print("SYNC --check: contract drift detected — a skills update PR is needed")
@@ -242,6 +296,39 @@ def openai_yaml(export_name, canonical_name):
     implicit = "false" if canonical_name in ALIASES else "true"
     lines += ["policy:", f"  allow_implicit_invocation: {implicit}"]
     return "\n".join(lines) + "\n"
+
+
+def plugin_files():
+    """Return {relative_path: content} for the complete generated plugin tree."""
+    legacy = CFG["pluginExport"]["legacyIds"]
+    exports = {legacy.get(name, name): name for name in SKILLS}
+    for alias in CFG["pluginExport"].get("includeAliases", []):
+        exports[alias] = alias
+
+    files = {}
+    for export_name, source in sorted(exports.items()):
+        source_files = render_alias(source) if source in ALIASES else {
+            str(path.relative_to(ROOT / source)): path.read_text()
+            for path in (ROOT / source).rglob("*") if path.is_file()
+        }
+        if export_name != source:
+            source_files["SKILL.md"] = re.sub(
+                r"^name: .*$", f"name: {export_name}", source_files["SKILL.md"],
+                count=1, flags=re.M,
+            )
+        source_files["agents/openai.yaml"] = openai_yaml(export_name, source)
+        for rel, content in source_files.items():
+            files[str(Path(export_name) / rel)] = content
+    return files
+
+
+def tree_files(root):
+    if not root.exists():
+        return {}
+    return {
+        str(path.relative_to(root)): path.read_text()
+        for path in root.rglob("*") if path.is_file()
+    }
 
 
 def build(check=False, target=None):
@@ -271,23 +358,29 @@ def build(check=False, target=None):
          json.dumps({"name": "agentmail", "skills": SKILLS}, indent=2) + "\n")
 
     if target:
-        legacy = CFG["pluginExport"]["legacyIds"]
         out = Path(target) / "skills"
-        exports = {legacy.get(n, n): n for n in SKILLS}
-        for a in CFG["pluginExport"].get("includeAliases", []):
-            exports[a] = a
-        for export_name, source in sorted(exports.items()):
-            src_files = render_alias(source) if source in ALIASES else {
-                str(f.relative_to(ROOT / source)): f.read_text()
-                for f in (ROOT / source).rglob("*") if f.is_file()}
-            if export_name != source:
-                skill = src_files["SKILL.md"]
-                skill = re.sub(r"^name: .*$", f"name: {export_name}", skill,
-                               count=1, flags=re.M)
-                src_files["SKILL.md"] = skill
-            src_files["agents/openai.yaml"] = openai_yaml(export_name, source)
-            for rel, content in src_files.items():
-                emit(out / export_name / rel, content)
+        expected = plugin_files()
+        actual = tree_files(out)
+        target_changes = [
+            str(out / rel)
+            for rel in sorted(set(expected) | set(actual))
+            if expected.get(rel) != actual.get(rel)
+        ]
+        changed.extend(target_changes)
+        if target_changes and not check:
+            out.parent.mkdir(parents=True, exist_ok=True)
+            staging = Path(tempfile.mkdtemp(prefix=".skills-", dir=out.parent))
+            try:
+                for rel, content in expected.items():
+                    path = staging / rel
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(content)
+                if out.exists():
+                    shutil.rmtree(out)
+                staging.rename(out)
+            finally:
+                if staging.exists():
+                    shutil.rmtree(staging)
 
     if check and changed:
         print(f"BUILD --check: {len(changed)} file(s) would change:")
@@ -299,20 +392,46 @@ def build(check=False, target=None):
 
 
 def deterministic_targz(src_dir, out_path):
-    buf = io.BytesIO()
-    with tarfile.open(fileobj=buf, mode="w:gz", compresslevel=9) as tar:
-        for f in sorted(src_dir.rglob("*")):
-            if not f.is_file():
+    tar_buf = io.BytesIO()
+    with tarfile.open(fileobj=tar_buf, mode="w") as tar:
+        for path in sorted(src_dir.rglob("*")):
+            if path.is_symlink():
+                raise ValueError(f"archive contains a link: {path}")
+            if not path.is_file():
                 continue
-            info = tarfile.TarInfo(str(f.relative_to(src_dir.parent)))
-            data = f.read_bytes()
+            rel = path.relative_to(src_dir)
+            if rel.is_absolute() or ".." in rel.parts:
+                raise ValueError(f"unsafe archive path: {rel}")
+            info = tarfile.TarInfo(rel.as_posix())
+            data = path.read_bytes()
             info.size = len(data)
             info.mtime, info.uid, info.gid = 0, 0, 0
             info.uname = info.gname = ""
+            info.mode = 0o644
             tar.addfile(info, io.BytesIO(data))
+
+    gzip_buf = io.BytesIO()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=gzip_buf,
+                       compresslevel=9, mtime=0) as compressed:
+        compressed.write(tar_buf.getvalue())
+    artifact = gzip_buf.getvalue()
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_bytes(buf.getvalue())
-    return hashlib.sha256(buf.getvalue()).hexdigest()
+    out_path.write_bytes(artifact)
+    return hashlib.sha256(artifact).hexdigest()
+
+
+def verify_publish_checkout(tag):
+    if run_git("status", "--porcelain"):
+        raise RuntimeError("publish-index requires a clean worktree")
+    try:
+        tag_commit = run_git("rev-parse", f"{tag}^{{commit}}")
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f"tag does not exist: {tag}") from exc
+    head_commit = run_git("rev-parse", "HEAD")
+    if tag_commit != head_commit:
+        raise RuntimeError(
+            f"tag {tag} points to {tag_commit[:8]}, but HEAD is {head_commit[:8]}"
+        )
 
 
 def publish_index(tag, dry_run=False):
@@ -320,27 +439,38 @@ def publish_index(tag, dry_run=False):
     Single-file skills -> skill-md raw URL at the tag; multi-file -> tar.gz
     release asset. With --dry-run, artifacts and index are built locally and
     the gh upload commands are printed instead of executed."""
+    verify_publish_checkout(tag)
     repo = "agentmail-to/agentmail-skills"
+    if not dry_run:
+        subprocess.run(["gh", "release", "view", tag, "--repo", repo], check=True)
+
     dist = ROOT / "dist"
+    if dist.exists():
+        shutil.rmtree(dist)
+    dist.mkdir()
     entries = []
     uploads = []
     for name in SKILLS:
         d = ROOT / name
-        multi = any(p.is_dir() for p in d.iterdir())
+        fm, _ = frontmatter(d / "SKILL.md")
+        description = fm["description"]
+        multi = any(path.is_file() and path.name != "SKILL.md"
+                    for path in d.rglob("*"))
         if multi:
             out = dist / f"{name}-{tag}.tar.gz"
             digest = deterministic_targz(d, out)
             uploads.append(out)
             entries.append({"name": name, "type": "archive",
+                            "description": description,
                             "url": f"https://github.com/{repo}/releases/download/{tag}/{out.name}",
-                            "sha256": digest})
+                            "digest": f"sha256:{digest}"})
         else:
             data = (d / "SKILL.md").read_bytes()
             entries.append({"name": name, "type": "skill-md",
+                            "description": description,
                             "url": f"https://raw.githubusercontent.com/{repo}/{tag}/{name}/SKILL.md",
-                            "sha256": hashlib.sha256(data).hexdigest()})
-    index = {"version": tag, "skills": entries}
-    dist.mkdir(exist_ok=True)
+                            "digest": f"sha256:{hashlib.sha256(data).hexdigest()}"})
+    index = {"$schema": DISCOVERY_SCHEMA, "skills": entries}
     (dist / "index.json").write_text(json.dumps(index, indent=2) + "\n")
     print(f"PUBLISH-INDEX: dist/index.json ({len(entries)} entries)")
     cmds = [["gh", "release", "upload", tag, str(u), "--repo", repo] for u in uploads]

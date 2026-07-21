@@ -79,7 +79,7 @@ Cons: router is a single point of failure, adds latency for forwarding.
 Each agent has its own public-facing address. External senders email the right agent directly.
 
 ```
-    customer@example.com  ->  support@agentmail.to
+    customer@example.com  ->  support@agents.example
     prospect@example.com  ->  sales@agentmail.to
     vendor@example.com    ->  billing@agentmail.to
 ```
