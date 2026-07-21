@@ -10,6 +10,7 @@ These examples target `agentmail` 0.5.6. Python methods use snake_case, and conf
 - [Pagination](#pagination)
 - [Errors and retries](#errors-and-retries)
 - [Drafts and attachments](#drafts-and-attachments)
+- [Pods (multi-tenant isolation)](#pods-multi-tenant-isolation)
 - [Async client](#async-client)
 
 ## Inboxes
@@ -152,7 +153,34 @@ attachment = client.inboxes.messages.get_attachment(
 )
 ```
 
+`get_attachment` does **not** return file bytes. It returns an `AttachmentResponse` with `download_url` (a CloudFront-signed URL), `expires_at` (~1 hour after the call), `filename`, `size`, and `content_type`. The signed URL is public-readable during its window — no auth header on the GET. Fetch the bytes immediately; never persist the URL (a later worker sees an expired-signature 403). Store the bytes or the `attachment_id` and re-fetch a fresh URL on demand.
+
+```python
+import urllib.request
+
+att = client.inboxes.messages.get_attachment(
+    inbox_id=inbox.inbox_id, message_id=message.message_id, attachment_id="att_456",
+)
+with urllib.request.urlopen(att.download_url, timeout=30) as r:
+    file_bytes = r.read()
+```
+
+Signed URLs point at `cdn.agentmail.to`, not `api.agentmail.to` — sandboxes that only allow the API host will 403/timeout on the fetch even though `get_attachment` succeeded.
+
 Send attachments with either base64 `content` or a supported `url`, plus `filename` and `content_type`.
+
+## Pods (multi-tenant isolation)
+
+Each pod is an isolated set of inboxes (one per customer/tenant). Note `pods.inboxes.create` takes flat kwargs, unlike top-level `inboxes.create`.
+
+```python
+pod = client.pods.create(name="customer-acme", client_id="pod-acme-v1")
+inbox = client.pods.inboxes.create(pod_id=pod.pod_id, username="notifications", client_id="acme-notif-v1")
+inboxes = client.pods.inboxes.list(pod_id=pod.pod_id)
+threads = client.pods.threads.list(pod_id=pod.pod_id)   # top-level threads.list has no pod filter
+pods = client.pods.list()
+client.pods.delete(pod_id=pod.pod_id)
+```
 
 ## Async client
 
