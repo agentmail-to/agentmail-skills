@@ -33,22 +33,61 @@
       "agentmail-check-email": "check-email",
       "agentmail-manage-inboxes": "manage-inboxes"
     },
-    "includeAliases": ["email-for-ai-agents"],
-    "mcpDependent": ["agentmail-send-email", "agentmail-check-email", "agentmail-manage-inboxes"],
+    "includeAliases": [],
+    "mcpDependent": [
+      "agentmail-send-email",
+      "agentmail-check-email",
+      "agentmail-manage-inboxes"
+    ],
     "display": {
-      "agentmail": {"name": "AgentMail SDK", "short": "Build AgentMail SDK integrations", "prompt": "Use $agentmail to implement a current AgentMail SDK workflow."},
-      "agentmail-cli": {"name": "AgentMail CLI", "short": "Operate AgentMail from a shell", "prompt": "Use $agentmail-cli to run AgentMail operations from the terminal."},
-      "agentmail-mcp": {"name": "AgentMail MCP Setup", "short": "Configure the AgentMail MCP server", "prompt": "Use $agentmail-mcp to configure or troubleshoot the AgentMail MCP connection."},
-      "agentmail-toolkit": {"name": "AgentMail Toolkit", "short": "Add AgentMail tools to agent frameworks", "prompt": "Use $agentmail-toolkit to wire AgentMail into an agent framework."},
-      "agent-email-patterns": {"name": "Agent Email Patterns", "short": "Design agent email architecture safely", "prompt": "Use $agent-email-patterns to design the agent email architecture and threat model."},
-      "agentmail-send-email": {"name": "Send Email", "short": "Draft and send AgentMail email", "prompt": "Use $send-email to prepare and send an AgentMail message safely."},
-      "agentmail-check-email": {"name": "Check Email", "short": "Read and triage AgentMail inboxes", "prompt": "Use $check-email to read, search, and triage AgentMail messages."},
-      "agentmail-manage-inboxes": {"name": "Manage Inboxes", "short": "Create and manage AgentMail inboxes", "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."},
-      "email-for-ai-agents": {"name": "Email for AI Agents (deprecated)", "short": "Deprecated alias of agent-email-patterns", "prompt": "Use $email-for-ai-agents only for compatibility; prefer $agent-email-patterns."}
+      "agentmail": {
+        "name": "AgentMail SDK",
+        "short": "Build AgentMail SDK integrations",
+        "prompt": "Use $agentmail to implement a current AgentMail SDK workflow."
+      },
+      "agentmail-cli": {
+        "name": "AgentMail CLI",
+        "short": "Operate AgentMail from a shell",
+        "prompt": "Use $agentmail-cli to run AgentMail operations from the terminal."
+      },
+      "agentmail-mcp": {
+        "name": "AgentMail MCP Setup",
+        "short": "Configure the AgentMail MCP server",
+        "prompt": "Use $agentmail-mcp to configure or troubleshoot the AgentMail MCP connection."
+      },
+      "agentmail-toolkit": {
+        "name": "AgentMail Toolkit",
+        "short": "Add AgentMail tools to agent frameworks",
+        "prompt": "Use $agentmail-toolkit to wire AgentMail into an agent framework."
+      },
+      "agent-email-patterns": {
+        "name": "Agent Email Patterns",
+        "short": "Design agent email architecture safely",
+        "prompt": "Use $agent-email-patterns to design the agent email architecture and threat model."
+      },
+      "agentmail-send-email": {
+        "name": "Send Email",
+        "short": "Draft and send AgentMail email",
+        "prompt": "Use $send-email to prepare and send an AgentMail message safely."
+      },
+      "agentmail-check-email": {
+        "name": "Check Email",
+        "short": "Read and triage AgentMail inboxes",
+        "prompt": "Use $check-email to read, search, and triage AgentMail messages."
+      },
+      "agentmail-manage-inboxes": {
+        "name": "Manage Inboxes",
+        "short": "Create and manage AgentMail inboxes",
+        "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."
+      }
     }
   },
   "backend": {
     "repo": "agentmail-to/agentmail-mcp",
     "manifestPath": "mcp-manifest.json"
-  }
+  },
+  "compatStubs": [
+    "agent-email-patterns/references/security.md",
+    "agent-email-patterns/references/multi-agent-topologies.md"
+  ]
 }
