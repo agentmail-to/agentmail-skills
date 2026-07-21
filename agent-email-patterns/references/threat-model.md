@@ -143,7 +143,7 @@ else:
 
 ### Defenses
 
-- Random usernames (`a7x9k2@agentmail.to` vs `support@agentmail.to`) at most reduce casual discovery of the address -- they are not a control, since a name can leak through any outbound email, header, or bounce. Do not treat obscurity as sender authentication.
+- Random usernames (`a7x9k2@agents.example` vs `support@agents.example`) at most reduce casual discovery of the address -- they are not a control, since a name can leak through any outbound email, header, or bounce. Do not treat obscurity as sender authentication.
 - Enable allow lists on all production inboxes
 - Monitor inbox volume and alert on unusual patterns
 - Use block lists to ban known-bad senders

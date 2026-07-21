@@ -1,0 +1,33 @@
+{
+  "sourceRepo": "agentmail-to/agentmail-mcp",
+  "sourceCommit": "3cba0f952feb9f765a30ed67e4731f8f95532041",
+  "manifestSha256": "b427fe456c8c2e39f74bc9910972c91b3ec495793b5f58ce56147e709636ebb3",
+  "tools": [
+    "auth_me",
+    "create_draft",
+    "create_inbox",
+    "delete_draft",
+    "delete_inbox",
+    "delete_thread",
+    "forward_message",
+    "get_attachment",
+    "get_draft",
+    "get_inbox",
+    "get_thread",
+    "list_drafts",
+    "list_inboxes",
+    "list_messages",
+    "list_organizations",
+    "list_threads",
+    "reply_to_message",
+    "search_messages",
+    "search_threads",
+    "select_organization",
+    "send_draft",
+    "send_message",
+    "update_draft",
+    "update_inbox",
+    "update_message",
+    "update_thread"
+  ]
+}
