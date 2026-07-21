@@ -27,6 +27,9 @@ CFG = json.loads((ROOT / "skills.json").read_text())
 SKILLS = CFG["skills"]
 ALIASES = CFG["aliases"]
 ACTION_SKILLS = CFG["pluginExport"]["mcpDependent"]
+# Repo-only compatibility stubs: keep old pinned paths resolving on main,
+# but never ship them into aliases or plugin exports (no path history there).
+COMPAT_STUBS = set(CFG.get("compatStubs", []))
 DISCOVERY_SCHEMA = "https://schemas.agentskills.io/discovery/0.2.0/schema.json"
 
 EXPECTED_AUTH_ROWS = {
@@ -131,8 +134,12 @@ def render_alias(name):
     target = ROOT / cfg["target"]
     files = {}
     for f in sorted(target.rglob("*")):
-        if f.is_file():
-            files[str(f.relative_to(target))] = f.read_text()
+        if not f.is_file():
+            continue
+        rel = str(f.relative_to(target))
+        if f"{cfg['target']}/{rel}" in COMPAT_STUBS:
+            continue
+        files[rel] = f.read_text()
     skill = files["SKILL.md"]
     skill = re.sub(r"^name: .*$", f"name: {name}", skill, count=1, flags=re.M)
     skill = re.sub(r"^description: .*$", f"description: {cfg['description']}",
@@ -309,7 +316,9 @@ def plugin_files():
     for export_name, source in sorted(exports.items()):
         source_files = render_alias(source) if source in ALIASES else {
             str(path.relative_to(ROOT / source)): path.read_text()
-            for path in (ROOT / source).rglob("*") if path.is_file()
+            for path in (ROOT / source).rglob("*")
+            if path.is_file()
+            and f"{source}/{path.relative_to(ROOT / source)}" not in COMPAT_STUBS
         }
         if export_name != source:
             source_files["SKILL.md"] = re.sub(
