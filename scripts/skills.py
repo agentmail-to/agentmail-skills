@@ -327,6 +327,10 @@ def plugin_files():
             )
         source_files["agents/openai.yaml"] = openai_yaml(export_name, source)
         for rel, content in source_files.items():
+            # Cross-references must use this target's skill IDs: canonical
+            # action-skill names don't exist in the plugin catalog.
+            for canonical, legacy_id in legacy.items():
+                content = content.replace(canonical, legacy_id)
             files[str(Path(export_name) / rel)] = content
     return files
 
