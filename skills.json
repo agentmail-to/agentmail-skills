@@ -83,9 +83,9 @@
         "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."
       },
       "agentmail-agentid": {
-        "name": "AgentID Sign-In",
-        "short": "Connect inboxes to providers",
-        "prompt": "Use $agentmail-agentid to find a provider, sign an inbox in, and list its accounts."
+        "name": "AgentID Accounts",
+        "short": "Create accounts at providers for your agent",
+        "prompt": "Use $agentmail-agentid to create an account for my agent at a provider, such as Firecrawl."
       }
     }
   },

@@ -26,7 +26,7 @@ Or as a plugin: `/plugin install agentmail@agentmail` (Claude Code).
 | `agentmail-send-email` | Draft, send, reply, forward through AgentMail MCP tools |
 | `agentmail-check-email` | Read, search, summarize, triage inboxes |
 | `agentmail-manage-inboxes` | Create, update, delete inboxes |
-| `agentmail-agentid` | Sign inboxes in to providers with AgentID; list provider accounts |
+| `agentmail-agentid` | Create accounts for an agent at providers (Firecrawl, Turso, ...) with AgentID; list where inboxes have accounts |
 
 `agentmail-sdk` and `email-for-ai-agents` are deprecated aliases (identical generated copies of `agentmail` and `agent-email-patterns`) kept so existing installs and pinned URLs keep resolving — don't install them alongside their replacements.
 
