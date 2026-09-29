@@ -93,5 +93,16 @@
       "Read the newest message in my support inbox and summarize it.",
       "Create a new Gmail account for my team."
     ]
+  },
+  "agentmail-agentid": {
+    "positive": [
+      "Sign my agent's inbox up for Firecrawl using AgentID.",
+      "Which providers is support-bot@agentmail.to signed in to?",
+      "Show me the AgentID provider marketplace and find something for web search."
+    ],
+    "negative": [
+      "Send an email from my inbox to bob@example.com telling him the meeting moved to 3pm.",
+      "Set up the AgentMail MCP server in Cursor."
+    ]
   }
 }

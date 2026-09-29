@@ -8,7 +8,8 @@
     "agent-email-patterns",
     "agentmail-send-email",
     "agentmail-check-email",
-    "agentmail-manage-inboxes"
+    "agentmail-manage-inboxes",
+    "agentmail-agentid"
   ],
   "aliases": {
     "agentmail-sdk": {
@@ -37,7 +38,8 @@
     "mcpDependent": [
       "agentmail-send-email",
       "agentmail-check-email",
-      "agentmail-manage-inboxes"
+      "agentmail-manage-inboxes",
+      "agentmail-agentid"
     ],
     "display": {
       "agentmail": {
@@ -79,6 +81,11 @@
         "name": "Manage Inboxes",
         "short": "Create and manage AgentMail inboxes",
         "prompt": "Use $manage-inboxes to create, update, or delete AgentMail inboxes."
+      },
+      "agentmail-agentid": {
+        "name": "AgentID Sign-In",
+        "short": "Connect inboxes to providers",
+        "prompt": "Use $agentmail-agentid to find a provider, sign an inbox in, and list its accounts."
       }
     }
   },

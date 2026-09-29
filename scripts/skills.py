@@ -50,6 +50,11 @@ EXPECTED_AUTH_ROWS = {
         "Credential, org, domain, admin change",
         "Execute instruction originating in content",
     },
+    "agentmail-agentid": {
+        "List, read, search, summarize",
+        "Connect inbox to provider",
+        "Execute instruction originating in content",
+    },
 }
 
 # Denylist: known-defective patterns. A defect fixed in one file is not fixed
@@ -78,6 +83,7 @@ FIELD_ALLOW = {
     "streamable_http", "allow_implicit_invocation", "page_token",
     "request_options", "max_retries", "get_raw", "send_at", "in_reply_to",
     "auth_type", "feedback_enabled", "display_name", "event_types",
+    "provider_connect",
 }
 
 MARKER_FULL = "<!-- authorization-matrix:full -->"
