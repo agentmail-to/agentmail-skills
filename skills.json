@@ -32,7 +32,8 @@
     "legacyIds": {
       "agentmail-send-email": "send-email",
       "agentmail-check-email": "check-email",
-      "agentmail-manage-inboxes": "manage-inboxes"
+      "agentmail-manage-inboxes": "manage-inboxes",
+      "agentmail-agentid": "agentid"
     },
     "includeAliases": [],
     "mcpDependent": [
