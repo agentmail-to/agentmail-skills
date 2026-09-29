@@ -8,6 +8,7 @@
     "agent-email-patterns",
     "agentmail-send-email",
     "agentmail-check-email",
-    "agentmail-manage-inboxes"
+    "agentmail-manage-inboxes",
+    "agentmail-agentid"
   ]
 }
