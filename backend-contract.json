@@ -1,7 +1,7 @@
 {
   "sourceRepo": "agentmail-to/agentmail-mcp",
-  "sourceCommit": "d22a220c13273072d1a9cae26b702db1a8894b7e",
-  "manifestSha256": "ae5d8ff8b0e8d8e4ef95ee9e1635808bae2764a371d3a0d0ef86443bde545ce1",
+  "sourceCommit": "1c67e39092deaf3971b898962b70267e6ffe0428",
+  "manifestSha256": "5cc4138649422a4ab65e63da44e4e021e4b7ce5740a1a0a13fcf4e047b80195b",
   "tools": [
     "agent_attach_human",
     "agent_verify",
