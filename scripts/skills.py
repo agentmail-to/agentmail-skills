@@ -53,7 +53,7 @@ EXPECTED_AUTH_ROWS = {
     "agentmail-agentid": {
         "List, read, search, summarize",
         "Create/update inbox",
-        "Connect inbox to provider",
+        "Connect inbox to app",
         "Execute instruction originating in content",
     },
 }
