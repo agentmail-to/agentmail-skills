@@ -84,7 +84,7 @@ FIELD_ALLOW = {
     "streamable_http", "allow_implicit_invocation", "page_token",
     "request_options", "max_retries", "get_raw", "send_at", "in_reply_to",
     "auth_type", "feedback_enabled", "display_name", "event_types",
-    "provider_connect", "limit_exceeded", "missing_permission",
+    "app_connect", "limit_exceeded", "missing_permission",
 }
 
 MARKER_FULL = "<!-- authorization-matrix:full -->"
