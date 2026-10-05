@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "7 15 * * *"
   workflow_dispatch:
 
 permissions:
@@ -27,3 +29,25 @@ jobs:
 
       - name: Tooling smoke tests
         run: python3 -m unittest discover -s tests -p "test_*.py"
+
+  upstream-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout canonical skills
+        uses: actions/checkout@v4
+        with:
+          path: agentmail-skills
+
+      - name: Checkout canonical MCP contract
+        uses: actions/checkout@v4
+        with:
+          repository: agentmail-to/agentmail-mcp
+          path: agentmail-mcp
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check skills against the current MCP manifest
+        working-directory: agentmail-skills
+        run: python3 scripts/skills.py sync --check --backend ../agentmail-mcp
