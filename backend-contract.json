@@ -5,6 +5,7 @@
   "tools": [
     "agent_attach_human",
     "agent_verify",
+    "authorize_inbox",
     "connect_app",
     "create_draft",
     "create_inbox",
